@@ -5,16 +5,28 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!bouton) return;
 
   bouton.addEventListener("click", () => {
-    let message = document.getElementById("message-fribouk");
+    let accueil = document.getElementById("accueil-fribouk");
 
-    if (!message) {
-      message = document.createElement("p");
-      message.id = "message-fribouk";
-      message.textContent =
-        "Bienvenue sur FRIBOUK ! Votre espace est prêt.";
-      bouton.insertAdjacentElement("afterend", message);
+    if (!accueil) {
+      accueil = document.createElement("section");
+      accueil.id = "accueil-fribouk";
+
+      accueil.innerHTML = `
+        <h2>Bienvenue sur FRIBOUK</h2>
+        <p>Votre espace d'intelligence artificielle.</p>
+
+        <button class="outil">IA Chat</button>
+        <button class="outil">Générateur de textes</button>
+        <button class="outil">Générateur d'images</button>
+        <button class="outil">Générateur de vidéos</button>
+        <button class="outil">Traduction</button>
+        <button class="outil">Transcription audio</button>
+      `;
+
+      bouton.insertAdjacentElement("afterend", accueil);
     }
 
-    message.scrollIntoView({ behavior: "smooth" });
+    accueil.scrollIntoView({ behavior: "smooth" });
   });
 });
+
