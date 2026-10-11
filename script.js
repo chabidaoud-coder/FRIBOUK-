@@ -2,31 +2,48 @@
 document.addEventListener("DOMContentLoaded", () => {
   const bouton = document.getElementById("commencer");
 
-  if (!bouton) return;
+  if (bouton) {
+    bouton.addEventListener("click", () => {
+      let message = document.getElementById("message-fribouk");
 
-  bouton.addEventListener("click", () => {
-    let accueil = document.getElementById("accueil-fribouk");
+      if (!message) {
+        message = document.createElement("p");
+        message.id = "message-fribouk";
+        message.textContent =
+          "Bienvenue sur FRIBOUK ! Votre espace est prêt.";
+        bouton.insertAdjacentElement("afterend", message);
+      }
+    });
+  }
 
-    if (!accueil) {
-      accueil = document.createElement("section");
-      accueil.id = "accueil-fribouk";
+  document.addEventListener("click", (event) => {
+    const outil = event.target.closest(".outil");
+    if (!outil) return;
 
-      accueil.innerHTML = `
-        <h2>Bienvenue sur FRIBOUK</h2>
-        <p>Votre espace d'intelligence artificielle.</p>
+    const nom = outil.textContent.trim();
 
-        <button class="outil">IA Chat</button>
-        <button class="outil">Générateur de textes</button>
-        <button class="outil">Générateur d'images</button>
-        <button class="outil">Générateur de vidéos</button>
-        <button class="outil">Traduction</button>
-        <button class="outil">Transcription audio</button>
-      `;
+    if (nom === "IA Chat") {
+      let zone = document.getElementById("zone-chat");
 
-      bouton.insertAdjacentElement("afterend", accueil);
+      if (!zone) {
+        zone = document.createElement("div");
+        zone.id = "zone-chat";
+        zone.innerHTML = `
+          <h3>FRIBOUK IA Chat</h3>
+          <p>Bienvenue dans votre espace de discussion.</p>
+          <textarea id="question-chat"
+            placeholder="Écris ta question ici"></textarea>
+          <p id="reponse-chat">
+            Le chat est affiché. La connexion à une IA
+            sera nécessaire pour obtenir de vraies réponses.
+          </p>
+        `;
+        outil.insertAdjacentElement("afterend", zone);
+      }
+
+      zone.scrollIntoView({ behavior: "smooth" });
+    } else {
+      alert(nom + " : cet outil sera bientôt disponible !");
     }
-
-    accueil.scrollIntoView({ behavior: "smooth" });
   });
 });
-
