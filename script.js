@@ -1,29 +1,20 @@
 
 document.addEventListener("DOMContentLoaded", () => {
-  const toolSelect = document.getElementById("toolSelect");
-  const promptInput = document.getElementById("promptInput");
-  const submitButton = document.getElementById("submitButton");
-  const result = document.getElementById("result");
+  const bouton = document.getElementById("commencer");
 
-  if (!submitButton || !promptInput || !result) {
-    console.error("Vérifie les éléments HTML de FRIBOUK.");
-    return;
-  }
+  if (!bouton) return;
 
-  submitButton.addEventListener("click", () => {
-    const prompt = promptInput.value.trim();
-    const tool = toolSelect ? toolSelect.value : "assistant";
+  bouton.addEventListener("click", () => {
+    let message = document.getElementById("message-fribouk");
 
-    if (!prompt) {
-      result.textContent = "Écris d'abord ta demande.";
-      return;
+    if (!message) {
+      message = document.createElement("p");
+      message.id = "message-fribouk";
+      message.textContent =
+        "Bienvenue sur FRIBOUK ! Votre espace est prêt.";
+      bouton.insertAdjacentElement("afterend", message);
     }
 
-    result.textContent =
-      "Demande enregistrée dans l'interface FRIBOUK. " +
-      "Outil sélectionné : " + tool +
-      ". La connexion à l'intelligence artificielle reste à configurer.";
+    message.scrollIntoView({ behavior: "smooth" });
   });
-
-  console.log("FRIBOUK est prêt !");
 });
