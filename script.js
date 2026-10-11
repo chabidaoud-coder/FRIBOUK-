@@ -1,15 +1,29 @@
-script.js
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("Bienvenue sur FRIBOUK !");
+document.addEventListener("DOMContentLoaded", () => {
+  const toolSelect = document.getElementById("toolSelect");
+  const promptInput = document.getElementById("promptInput");
+  const submitButton = document.getElementById("submitButton");
+  const result = document.getElementById("result");
 
-  const boutons = document.querySelectorAll("[data-action]");
+  if (!submitButton || !promptInput || !result) {
+    console.error("Vérifie les éléments HTML de FRIBOUK.");
+    return;
+  }
 
-  boutons.forEach(function (bouton) {
-    bouton.addEventListener("click", function () {
-      const action = bouton.dataset.action;
+  submitButton.addEventListener("click", () => {
+    const prompt = promptInput.value.trim();
+    const tool = toolSelect ? toolSelect.value : "assistant";
 
-      alert("FRIBOUK : " + action + " sera bientôt disponible !");
-    });
+    if (!prompt) {
+      result.textContent = "Écris d'abord ta demande.";
+      return;
+    }
+
+    result.textContent =
+      "Demande enregistrée dans l'interface FRIBOUK. " +
+      "Outil sélectionné : " + tool +
+      ". La connexion à l'intelligence artificielle reste à configurer.";
   });
+
+  console.log("FRIBOUK est prêt !");
 });
