@@ -1,0 +1,345 @@
+index.css.
+
+:root {
+  --background: #0b1120;
+  --surface: #151e32;
+  --surface-light: #1d2942;
+  --primary: #38bdf8;
+  --primary-dark: #0284c7;
+  --text: #f8fafc;
+  --muted: #a7b4ca;
+  --border: #2b3954;
+  --radius: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 6%;
+  background: rgba(11, 17, 32, 0.96);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.logo span,
+.hero h1 span {
+  color: var(--primary);
+}
+
+#navigation {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+#navigation a {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+#navigation a:hover {
+  color: var(--primary);
+}
+
+.menu-button {
+  display: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.hero {
+  min-height: 460px;
+  padding: 85px 7% 70px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 0%, #15335b 0%, transparent 65%);
+}
+
+.tag {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 1px solid #24517b;
+  border-radius: 999px;
+  color: #bae6fd;
+  font-size: 13px;
+}
+
+.hero h1 {
+  margin: 22px 0 12px;
+  font-size: clamp(36px, 7vw, 64px);
+  line-height: 1.12;
+  letter-spacing: -1.5px;
+}
+
+.hero > p:not(.small-note) {
+  max-width: 600px;
+  margin: 18px auto 28px;
+  color: var(--muted);
+}
+
+.primary-button {
+  display: inline-block;
+  padding: 13px 22px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #07111f;
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.primary-button:hover {
+  background: #7dd3fc;
+  transform: translateY(-1px);
+}
+
+.section {
+  padding: 55px 6%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section h2 {
+  margin: 0 0 6px;
+  font-size: clamp(25px, 4vw, 34px);
+  text-align: center;
+}
+
+.section-intro {
+  margin: 0 0 28px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.tool-card:hover,
+.tool-card:focus-visible {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.tool-icon {
+  font-size: 30px;
+}
+
+.tool-card strong {
+  font-size: 17px;
+}
+
+.tool-card > span:last-child {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.assistant {
+  max-width: 760px;
+  margin: 20px auto 60px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+}
+
+.assistant label {
+  display: block;
+  margin: 18px 0 7px;
+  font-weight: 700;
+}
+
+.assistant select,
+.assistant textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  background: var(--background);
+  color: var(--text);
+}
+
+.assistant textarea {
+  resize: vertical;
+}
+
+.assistant select:focus,
+.assistant textarea:focus {
+  border-color: var(--primary);
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.small-note {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.result {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  overflow-wrap: anywhere;
+}
+
+footer {
+  padding: 30px 6%;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  text-align: center;
+}
+
+footer .logo {
+  color: var(--text);
+}
+
+footer p {
+  font-size: 13px;
+}
+
+@media (min-width: 900px) {
+  .tools-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: 12px 5%;
+  }
+
+  .menu-button {
+    display: block;
+  }
+
+  #navigation {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 5% 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--background);
+  }
+
+  #navigation.open {
+    display: flex;
+  }
+
+  #navigation a {
+    padding: 12px;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 65px 6% 55px;
+  }
+
+  .hero h1 {
+    letter-spacing: -1px;
+  }
+
+  .section {
+    padding: 40px 5%;
+  }
+
+  .tools-grid {
+    gap: 10px;
+  }
+
+  .tool-card {
+    padding: 15px;
+  }
+
+  .tool-card strong {
+    font-size: 15px;
+  }
+
+  .tool-card > span:last-child {
+    font-size: 12px;
+  }
+
+  .assistant {
+    margin: 10px 5% 40px;
+    padding: 20px;
+  }
+}
