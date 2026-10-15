@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* CONNEXION FRIBOUK */
 const FRIBOUK_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
-const FRIBOUK_KEY = "const FRIBOUK_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+const FRIBOUK_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
 
 document.addEventListener("DOMContentLoaded", function () {
   if (!window.supabase) {
