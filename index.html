@@ -55,6 +55,113 @@
         Fermer le chat
       </button>
     </section>
+    
+<!-- ESPACE CONNEXION FRIBOUK -->
+<section id="connexion" class="espace">
+  <h2>Connexion à FRIBOUK</h2>
+
+  <form id="form-connexion">
+    <label for="email">Adresse e-mail</label>
+    <input
+      type="email"
+      id="email"
+      placeholder="Votre adresse e-mail"
+      required
+    >
+
+    <label for="mot-de-passe">Mot de passe</label>
+    <input
+      type="password"
+      id="mot-de-passe"
+      placeholder="Votre mot de passe"
+      required
+    >
+
+    <button type="submit">Se connecter</button>
+    <button type="button" id="inscription">
+      Créer un compte
+    </button>
+  </form>
+
+  <p id="message-connexion"></p>
+</section>
+
+<!-- TABLEAU DE BORD -->
+<section id="tableau-de-bord" class="espace">
+  <h2>Mon espace de travail</h2>
+  <p>Bienvenue dans votre espace FRIBOUK.</p>
+
+  <p>Crédits disponibles :
+    <strong id="credits">20</strong>
+  </p>
+
+  <button type="button" class="outil"
+    onclick="ouvrirEspace('zone-chat')">
+    IA Chat
+  </button>
+
+  <button type="button" class="outil"
+    onclick="ouvrirEspace('espace-textes')">
+    Générateur de textes
+  </button>
+
+  <button type="button" class="outil"
+    onclick="ouvrirEspace('espace-images')">
+    Générateur d'images
+  </button>
+
+  <button type="button" class="outil"
+    onclick="ouvrirEspace('espace-videos')">
+    Générateur de vidéos
+  </button>
+
+  <button type="button" class="outil"
+    onclick="ouvrirEspace('espace-formations')">
+    Formations
+  </button>
+
+  <button type="button" class="outil"
+    onclick="ouvrirEspace('espace-boutiques')">
+    Boutiques en ligne
+  </button>
+</section>
+
+<!-- ESPACE TEXTES -->
+<section id="espace-textes" class="espace">
+  <h2>Générateur de textes</h2>
+  <textarea id="demande-texte"
+    placeholder="Décris le texte à créer"></textarea>
+  <button type="button">Générer le texte</button>
+</section>
+
+<!-- ESPACE IMAGES -->
+<section id="espace-images" class="espace">
+  <h2>Générateur d'images</h2>
+  <textarea id="demande-image"
+    placeholder="Décris l'image souhaitée"></textarea>
+  <button type="button">Générer l'image</button>
+</section>
+
+<!-- ESPACE VIDÉOS -->
+<section id="espace-videos" class="espace">
+  <h2>Générateur de vidéos</h2>
+  <textarea id="demande-video"
+    placeholder="Décris la vidéo souhaitée"></textarea>
+  <button type="button">Préparer la vidéo</button>
+</section>
+
+<!-- ESPACE FORMATIONS -->
+<section id="espace-formations" class="espace">
+  <h2>Formations</h2>
+  <p>Découvrez les cours et les formations disponibles.</p>
+</section>
+
+<!-- ESPACE BOUTIQUES -->
+<section id="espace-boutiques" class="espace">
+  <h2>Boutiques et marketplace</h2>
+  <p>Accédez aux boutiques et aux produits disponibles.</p>
+    </section>
+    
   </main>
 
 
