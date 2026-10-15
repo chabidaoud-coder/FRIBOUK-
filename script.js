@@ -111,5 +111,36 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+  
+const boutonOublie = document.getElementById("mot-de-passe-oublie");
+const messageReset = document.getElementById("message-reinitialisation");
+
+if (boutonOublie) {
+  boutonOublie.addEventListener("click", async function () {
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+      if (messageReset) {
+        messageReset.textContent = "Entre d'abord ton adresse e-mail.";
+      }
+      return;
+    }
+
+    if (messageReset) {
+      messageReset.textContent = "Envoi du lien en cours...";
+    }
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://chabidaoud-coder.github.io/FRIBOUK-/"
+    });
+
+    if (messageReset) {
+      messageReset.textContent = error
+        ? "Erreur : " + error.message
+        : "Consulte ta boîte e-mail pour réinitialiser ton mot de passe.";
+    }
+  });
+}
+  
 });
   
