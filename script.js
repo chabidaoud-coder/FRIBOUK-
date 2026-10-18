@@ -153,6 +153,45 @@ document.addEventListener("DOMContentLoaded", function () {
   const formulaireBoutique = document.getElementById("formulaire-boutique");
   const enregistrerBoutique = document.getElementById("enregistrer-boutique");
   const messageBoutique = document.getElementById("message-boutique");
+   async function afficherBoutiques() {
+    if (!listeProduits) return;
+
+    listeProduits.innerHTML = "<p>Chargement des boutiques...</p>";
+
+    const { data, error } = await sb
+      .from("boutiques")
+      .select("nom, description")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      listeProduits.innerHTML =
+        "<p>Impossible de charger les boutiques.</p>";
+      console.error(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listeProduits.innerHTML = "<p>Aucune boutique disponible.</p>";
+      return;
+    }
+
+    listeProduits.replaceChildren();
+
+    data.forEach(function (boutique) {
+      const carte = document.createElement("div");
+      const titre = document.createElement("h4");
+      const description = document.createElement("p");
+
+      titre.textContent = boutique.nom;
+      description.textContent = boutique.description || "Aucune description.";
+
+      carte.appendChild(titre);
+      carte.appendChild(description);
+      listeProduits.appendChild(carte);
+    });
+  }
+
+  afficherBoutiques(); 
 
   if (voirProduits && listeProduits) {
     voirProduits.addEventListener("click", function () {
