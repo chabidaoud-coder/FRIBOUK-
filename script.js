@@ -210,15 +210,6 @@ if (enregistrerBoutique) {
   });
 }
 
-
-      messageBoutique.textContent =
-        "Informations saisies pour la boutique : " + nom +
-        (description ? " — " + description : "") +
-        ". La sauvegarde définitive sera ajoutée ensuite.";
-    });
-  }
-}
-
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initialiserBoutique);
 } else {
