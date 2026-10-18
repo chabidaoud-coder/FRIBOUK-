@@ -215,4 +215,3 @@ if (document.readyState === "loading") {
 } else {
   initialiserBoutique();
 }
-
