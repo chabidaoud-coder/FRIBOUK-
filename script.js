@@ -144,7 +144,7 @@ if (boutonOublie) {
   
 });
   
-document.addEventListener("DOMContentLoaded", function () {
+function initialiserBoutique() {
   const voirProduits = document.getElementById("voir-produits");
   const ouvrirBoutique = document.getElementById("ouvrir-boutique");
   const listeProduits = document.getElementById("liste-produits");
@@ -180,5 +180,11 @@ document.addEventListener("DOMContentLoaded", function () {
         ". La sauvegarde définitive sera ajoutée ensuite.";
     });
   }
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initialiserBoutique);
+} else {
+  initialiserBoutique();
+}
 
