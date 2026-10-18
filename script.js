@@ -144,3 +144,41 @@ if (boutonOublie) {
   
 });
   
+document.addEventListener("DOMContentLoaded", function () {
+  const voirProduits = document.getElementById("voir-produits");
+  const ouvrirBoutique = document.getElementById("ouvrir-boutique");
+  const listeProduits = document.getElementById("liste-produits");
+  const formulaireBoutique = document.getElementById("formulaire-boutique");
+  const enregistrerBoutique = document.getElementById("enregistrer-boutique");
+  const messageBoutique = document.getElementById("message-boutique");
+
+  if (voirProduits && listeProduits) {
+    voirProduits.addEventListener("click", function () {
+      listeProduits.hidden = !listeProduits.hidden;
+    });
+  }
+
+  if (ouvrirBoutique && formulaireBoutique) {
+    ouvrirBoutique.addEventListener("click", function () {
+      formulaireBoutique.hidden = !formulaireBoutique.hidden;
+    });
+  }
+
+  if (enregistrerBoutique) {
+    enregistrerBoutique.addEventListener("click", function () {
+      const nom = document.getElementById("nom-boutique").value.trim();
+      const description = document.getElementById("description-boutique").value.trim();
+
+      if (!nom) {
+        messageBoutique.textContent = "Entre le nom de ta boutique.";
+        return;
+      }
+
+      messageBoutique.textContent =
+        "Informations saisies pour la boutique : " + nom +
+        (description ? " — " + description : "") +
+        ". La sauvegarde définitive sera ajoutée ensuite.";
+    });
+  }
+});
+
