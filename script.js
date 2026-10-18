@@ -168,7 +168,7 @@ function initialiserBoutique() {
 if (enregistrerBoutique) {
   enregistrerBoutique.addEventListener("click", async function () {
     const nom = document.getElementById("nom-boutique").value.trim();
-    const description = document.getElementById("description-boutique").value.trim();
+  const description = document.getElementById("description-boutique").value.trim();
 
     if (!nom) {
       messageBoutique.textContent = "Entre le nom de ta boutique.";
