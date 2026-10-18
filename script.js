@@ -164,15 +164,52 @@ function initialiserBoutique() {
     });
   }
 
-  if (enregistrerBoutique) {
-    enregistrerBoutique.addEventListener("click", function () {
-      const nom = document.getElementById("nom-boutique").value.trim();
-      const description = document.getElementById("description-boutique").value.trim();
+  
+if (enregistrerBoutique) {
+  enregistrerBoutique.addEventListener("click", async function () {
+    const nom = document.getElementById("nom-boutique").value.trim();
+    const description = document.getElementById("description-boutique").value.trim();
 
-      if (!nom) {
-        messageBoutique.textContent = "Entre le nom de ta boutique.";
-        return;
-      }
+    if (!nom) {
+      messageBoutique.textContent = "Entre le nom de ta boutique.";
+      return;
+    }
+
+    if (!window.supabase) {
+      messageBoutique.textContent = "Supabase ne se charge pas.";
+      return;
+    }
+
+    const { data: { user }, error: erreurConnexion } =
+      await sb.auth.getUser();
+
+    if (erreurConnexion || !user) {
+      messageBoutique.textContent =
+        "Connecte-toi à FRIBOUK avant d'enregistrer ta boutique.";
+      return;
+    }
+
+    messageBoutique.textContent = "Enregistrement en cours...";
+
+    const { error } = await sb
+      .from("boutiques")
+      .insert({
+        proprietaire: user.id,
+        nom: nom,
+        description: description
+      });
+
+    if (error) {
+      messageBoutique.textContent =
+        "Erreur d'enregistrement : " + error.message;
+      return;
+    }
+
+    messageBoutique.textContent =
+      "Boutique « " + nom + " » enregistrée avec succès !";
+  });
+}
+
 
       messageBoutique.textContent =
         "Informations saisies pour la boutique : " + nom +
