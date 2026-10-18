@@ -201,11 +201,53 @@
     Ajouter un produit
   </button>
 
+<!-- FORMULAIRE D'AJOUT DE PRODUITS -->
+<div id="formulaire-produit" hidden>
+  <h3>Ajouter un produit</h3>
+
+  <label for="nom-produit">Nom du produit</label>
+  <input
+    type="text"
+    id="nom-produit"
+    placeholder="Ex. : Savon naturel"
+    required
+  />
+
+  <label for="prix-produit">Prix (FCFA)</label>
+  <input
+    type="number"
+    id="prix-produit"
+    min="0"
+    step="1"
+    placeholder="Ex. : 2500"
+    required
+  />
+
+  <label for="description-produit">Description</label>
+  <textarea
+    id="description-produit"
+    placeholder="Décris ton produit"
+  ></textarea>
+
+  <label for="boutique-produit">Identifiant de la boutique</label>
+  <input
+    type="text"
+    id="boutique-produit"
+    placeholder="Identifiant UUID de ta boutique"
+    required
+  />
+
+  <button type="button" id="ouvrir-formulaire-produit">
+    Ajouter un produit
+  </button>
+
+  <p id="message-produit"></p>
+</div>
+  
   <p id="message-produit"></p>
 </div>
   
 </section>
-
 <!-- ESPACE BOUTIQUES -->
 <section id="espace-boutiques" class="espace">
   <h2>Boutiques et marketplace</h2>
