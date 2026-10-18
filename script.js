@@ -256,5 +256,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+  const boutonAfficherProduit = document.getElementById("afficher-formulaire-produit");
+  const formulaireProduit = document.getElementById("formulaire-produit");
 
+  if (boutonAfficherProduit && formulaireProduit) {
+    boutonAfficherProduit.addEventListener("click", function () {
+      formulaireProduit.hidden = !formulaireProduit.hidden;
+    });
+  }
 });
