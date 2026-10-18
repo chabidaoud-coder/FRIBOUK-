@@ -166,7 +166,41 @@
 <section id="espace-boutiques" class="espace">
   <h2>Boutiques et marketplace</h2>
   <p>Accédez aux boutiques et aux produits disponibles.</p>
-    </section>
+
+  <div class="boutique-actions">
+    <button type="button" id="voir-produits">
+      Voir les produits
+    </button>
+
+    <button type="button" id="ouvrir-boutique">
+      Créer ma boutique
+    </button>
+  </div>
+
+  <div id="liste-produits" hidden>
+    <h3>Produits disponibles</h3>
+    <p>Les produits seront affichés ici.</p>
+  </div>
+
+  <div id="formulaire-boutique" hidden>
+    <h3>Créer ma boutique</h3>
+
+    <label for="nom-boutique">Nom de la boutique</label>
+    <input id="nom-boutique" type="text"
+           placeholder="Ex. Ma boutique" />
+
+    <label for="description-boutique">Description</label>
+    <textarea id="description-boutique"
+              placeholder="Présentez votre boutique"></textarea>
+
+    <button type="button" id="enregistrer-boutique">
+      Enregistrer ma boutique
+    </button>
+
+    <p id="message-boutique"></p>
+  </div>
+</section>
+    
     
   </main>
 
