@@ -193,11 +193,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
   afficherBoutiques(); 
 
-  if (voirProduits && listeProduits) {
-    voirProduits.addEventListener("click", function () {
-      listeProduits.hidden = !listeProduits.hidden;
-    });
-  }
+  const listeProduitsAffiches =
+  document.getElementById("liste-produits-affiches");
+
+if (voirProduits && listeProduitsAffiches) {
+  voirProduits.addEventListener("click", async function () {
+    listeProduitsAffiches.hidden = false;
+    listeProduitsAffiches.innerHTML =
+      "<h3>Produits disponibles</h3><p>Chargement...</p>";
+
+    try {
+      const { data, error } = await sb
+        .from("produits")
+        .select("id, nom, description, prix")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        listeProduitsAffiches.innerHTML =
+          "<p>Erreur : " + error.message + "</p>";
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        listeProduitsAffiches.innerHTML =
+          "<h3>Produits disponibles</h3>" +
+          "<p>Aucun produit enregistré pour le moment.</p>";
+        return;
+      }
+
+      listeProduitsAffiches.innerHTML =
+        "<h3>Produits disponibles</h3>";
+
+      data.forEach(function (produit) {
+        const carte = document.createElement("div");
+        const nom = document.createElement("h4");
+        const prix = document.createElement("p");
+        const description = document.createElement("p");
+
+        nom.textContent = produit.nom;
+        prix.textContent = "Prix : " + produit.prix + " FCFA";
+        description.textContent = produit.description || "";
+
+        carte.append(nom, prix, description);
+        listeProduitsAffiches.appendChild(carte);
+      });
+    } catch (erreur) {
+      listeProduitsAffiches.innerHTML =
+        "<p>Erreur : " + erreur.message + "</p>";
+    }
+  });
+}
 
   if (ouvrirBoutique && formulaireBoutique) {
     ouvrirBoutique.addEventListener("click", function () {
