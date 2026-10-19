@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
   /* 4. BOUTIQUES */
   const voirProduits = document.getElementById("voir-produits");
   const ouvrirBoutique = document.getElementById("ouvrir-boutique");
-  const listeProduits = document.getElementById("liste-produits");
+  const listeProduits = document.getElementById("liste-boutiques");
   const formulaireBoutique = document.getElementById("formulaire-boutique");
   const enregistrerBoutique = document.getElementById("enregistrer-boutique");
   const messageBoutique = document.getElementById("message-boutique");
