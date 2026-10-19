@@ -205,7 +205,7 @@ if (voirProduits && listeProduitsAffiches) {
     try {
       const { data, error } = await sb
         .from("produits")
-        .select("id, nom, description, prix")
+        .select("id, nom, description, prix, photo_url")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -229,7 +229,17 @@ if (voirProduits && listeProduitsAffiches) {
         const nom = document.createElement("h4");
         const prix = document.createElement("p");
         const description = document.createElement("p");
-
+        const image = document.createElement("img");
+        
+        if (produit.photo_url) {
+  image.src = produit.photo_url;
+  image.alt = produit.nom;
+  image.style.width = "100%";
+  image.style.maxWidth = "300px";
+  image.style.height = "auto";
+  image.style.objectFit = "contain";
+  carte.appendChild(image);
+        }
         nom.textContent = produit.nom;
         prix.textContent = "Prix : " + produit.prix + " FCFA";
         description.textContent = produit.description || "";
