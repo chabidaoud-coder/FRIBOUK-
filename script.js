@@ -264,4 +264,56 @@ document.addEventListener("DOMContentLoaded", function () {
       formulaireProduit.hidden = !formulaireProduit.hidden;
     });
   }
+  /* ENREGISTRER UN PRODUIT DANS SUPABASE */
+  const boutonEnregistrerProduit = document.getElementById("ouvrir-formulaire-produit");
+  const messageProduit = document.getElementById("message-produit");
+
+  if (boutonEnregistrerProduit) {
+    boutonEnregistrerProduit.addEventListener("click", async function () {
+      const nom = document.getElementById("nom-produit").value.trim();
+      const prixTexte = document.getElementById("prix-produit").value;
+      const prix = Number(prixTexte);
+      const description = document.getElementById("description-produit").value.trim();
+      const boutiqueId = document.getElementById("boutique-produit").value.trim();
+
+      if (!messageProduit) return;
+
+      if (!nom || prixTexte === "" || !Number.isFinite(prix) || prix < 0 || !boutiqueId) {
+        messageProduit.textContent = "Remplis le nom, le prix et l'identifiant de la boutique.";
+        return;
+      }
+
+      messageProduit.textContent = "Enregistrement en cours...";
+
+      try {
+        const { data: { user }, error: erreurConnexion } = await sb.auth.getUser();
+
+        if (erreurConnexion || !user) {
+          messageProduit.textContent = "Connecte-toi avant d'ajouter un produit.";
+          return;
+        }
+
+        const { error } = await sb.from("produits").insert({
+          boutique_id: boutiqueId,
+          proprietaire: user.id,
+          nom: nom,
+          description: description,
+          prix: prix
+        });
+
+        if (error) {
+          messageProduit.textContent = "Erreur Supabase : " + error.message;
+          return;
+        }
+
+        messageProduit.textContent = "Produit enregistré avec succès !";
+        document.getElementById("nom-produit").value = "";
+        document.getElementById("prix-produit").value = "";
+        document.getElementById("description-produit").value = "";
+      } catch (erreur) {
+        messageProduit.textContent = "Erreur : " + erreur.message;
+      }
+    });
+  }
+  
 });
