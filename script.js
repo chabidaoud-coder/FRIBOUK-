@@ -249,10 +249,27 @@ boutonModifier.textContent = "Modifier";
 boutonSupprimer.textContent = "Supprimer";
         carte.append(nom, prix, description);
         carte.append(boutonModifier, boutonSupprimer);
+        
         listeProduitsAffiches.appendChild(carte);
-      });
-    } catch (erreur) {
-      listeProduitsAffiches.innerHTML =
+boutonSupprimer.addEventListener("click", async function () {
+  if (!confirm("Veux-tu vraiment supprimer ce produit ?")) return;
+
+  const { error } = await sb
+    .from("produits")
+    .delete()
+    .eq("id", produit.id);
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  carte.remove();
+  alert("Produit supprimé avec succès !");
+});
+     } 
+                   
+        listeProduitsAffiches.innerHTML =
         "<p>Erreur : " + erreur.message + "</p>";
     }
   });
@@ -263,7 +280,138 @@ boutonSupprimer.textContent = "Supprimer";
       formulaireBoutique.hidden = !formulaireBoutique.hidden;
     });
   }
+  
+const listeProduitsAffiches =
+  document.getElementById("liste-produits-affiches");
 
+if (voirProduits && listeProduitsAffiches) {
+  voirProduits.addEventListener("click", async function () {
+    listeProduitsAffiches.hidden = false;
+    listeProduitsAffiches.innerHTML =
+      "<h3>Produits disponibles</h3><p>Chargement...</p>";
+
+    try {
+      const { data, error } = await sb
+        .from("produits")
+        .select("id, nom, description, prix, photo_url")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      listeProduitsAffiches.innerHTML =
+        "<h3>Produits disponibles</h3>";
+
+      if (!data || data.length === 0) {
+        listeProduitsAffiches.innerHTML +=
+          "<p>Aucun produit enregistré pour le moment.</p>";
+        return;
+      }
+
+      data.forEach(function (produit) {
+        const carte = document.createElement("div");
+        const nom = document.createElement("h4");
+        const prix = document.createElement("p");
+        const description = document.createElement("p");
+        const boutonModifier = document.createElement("button");
+        const boutonSupprimer = document.createElement("button");
+
+        if (produit.photo_url) {
+          const image = document.createElement("img");
+          image.src = produit.photo_url;
+          image.alt = produit.nom;
+          image.style.width = "100%";
+          image.style.maxWidth = "300px";
+          image.style.height = "auto";
+          carte.appendChild(image);
+        }
+
+        nom.textContent = produit.nom;
+        prix.textContent = "Prix : " + produit.prix + " FCFA";
+        description.textContent = produit.description || "";
+        boutonModifier.textContent = "Modifier";
+        boutonSupprimer.textContent = "Supprimer";
+
+        carte.append(nom, prix, description);
+        carte.append(boutonModifier, boutonSupprimer);
+        listeProduitsAffiches.appendChild(carte);
+
+        boutonModifier.addEventListener("click", async function () {
+          const nouveauNom = prompt("Nouveau nom :", produit.nom);
+          if (nouveauNom === null) return;
+
+          const nouveauPrixTexte = prompt(
+            "Nouveau prix en FCFA :", produit.prix
+          );
+          if (nouveauPrixTexte === null) return;
+
+          const nouveauPrix = Number(nouveauPrixTexte);
+          if (!nouveauNom.trim() ||
+              nouveauPrixTexte.trim() === "" ||
+              !Number.isFinite(nouveauPrix) ||
+              nouveauPrix < 0) {
+            alert("Entre un nom et un prix valides.");
+            return;
+          }
+
+          const nouvelleDescription = prompt(
+            "Nouvelle description :", produit.description || ""
+          );
+          if (nouvelleDescription === null) return;
+
+          const { data: utilisateur } = await sb.auth.getUser();
+          if (!utilisateur.user) {
+            alert("Connecte-toi avant de modifier un produit.");
+            return;
+          }
+
+          const { error } = await sb
+            .from("produits")
+            .update({
+              nom: nouveauNom.trim(),
+              prix: nouveauPrix,
+              description: nouvelleDescription.trim()
+            })
+            .eq("id", produit.id);
+
+          if (error) {
+            alert("Erreur de modification : " + error.message);
+            return;
+          }
+
+          alert("Produit modifié avec succès !");
+          voirProduits.click();
+        });
+
+        boutonSupprimer.addEventListener("click", async function () {
+          if (!confirm("Veux-tu vraiment supprimer ce produit ?")) return;
+
+          const { data: utilisateur } = await sb.auth.getUser();
+          if (!utilisateur.user) {
+            alert("Connecte-toi avant de supprimer un produit.");
+            return;
+          }
+
+          const { error } = await sb
+            .from("produits")
+            .delete()
+            .eq("id", produit.id);
+
+          if (error) {
+            alert("Erreur de suppression : " + error.message);
+            return;
+          }
+
+          carte.remove();
+          alert("Produit supprimé avec succès !");
+        });
+      });
+    } catch (erreur) {
+      listeProduitsAffiches.innerHTML =
+        "<p>Erreur : " + erreur.message + "</p>";
+    }
+  });
+          }
+          
   if (enregistrerBoutique) {
     enregistrerBoutique.addEventListener("click", async function () {
       const champNom = document.getElementById("nom-boutique");
