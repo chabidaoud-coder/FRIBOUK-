@@ -243,8 +243,12 @@ if (voirProduits && listeProduitsAffiches) {
         nom.textContent = produit.nom;
         prix.textContent = "Prix : " + produit.prix + " FCFA";
         description.textContent = produit.description || "";
-
+const boutonModifier = document.createElement("button");
+boutonModifier.textContent = "Modifier";
+        const boutonSupprimer = document.createElement("button");
+boutonSupprimer.textContent = "Supprimer";
         carte.append(nom, prix, description);
+        carte.append(boutonModifier, boutonSupprimer);
         listeProduitsAffiches.appendChild(carte);
       });
     } catch (erreur) {
