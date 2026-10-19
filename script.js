@@ -316,6 +316,7 @@ if (voirProduits && listeProduitsAffiches) {
   if (boutonEnregistrerProduit) {
     boutonEnregistrerProduit.addEventListener("click", async function () {
       const nom = document.getElementById("nom-produit").value.trim();
+      const photo = document.getElementById("photo-produit").files[0];
       const prixTexte = document.getElementById("prix-produit").value;
       const prix = Number(prixTexte);
       const description = document.getElementById("description-produit").value.trim();
