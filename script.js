@@ -316,4 +316,57 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   
+  /* AFFICHER LES PRODUITS DEPUIS SUPABASE */
+  const boutonVoirProduits = document.getElementById("voir-produits");
+  const listeProduits = document.getElementById("liste-produits");
+
+  if (boutonVoirProduits && listeProduits) {
+    boutonVoirProduits.addEventListener("click", async function () {
+      listeProduits.hidden = false;
+      listeProduits.innerHTML = "<h3>Produits disponibles</h3><p>Chargement...</p>";
+
+      try {
+        const { data, error } = await sb
+          .from("produits")
+          .select("id, nom, description, prix")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          listeProduits.innerHTML =
+            "<h3>Produits disponibles</h3><p>Erreur : " +
+            error.message +
+            "</p>";
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          listeProduits.innerHTML =
+            "<h3>Produits disponibles</h3><p>Aucun produit enregistré pour le moment.</p>";
+          return;
+        }
+
+        listeProduits.innerHTML = "<h3>Produits disponibles</h3>";
+
+        data.forEach(function (produit) {
+          const carte = document.createElement("div");
+          const nom = document.createElement("h4");
+          const prix = document.createElement("p");
+          const description = document.createElement("p");
+
+          nom.textContent = produit.nom;
+          prix.textContent = "Prix : " + produit.prix + " FCFA";
+          description.textContent = produit.description || "";
+
+          carte.append(nom, prix, description);
+          listeProduits.appendChild(carte);
+        });
+      } catch (erreur) {
+        listeProduits.innerHTML =
+          "<h3>Produits disponibles</h3><p>Erreur : " +
+          erreur.message +
+          "</p>";
+      }
+    });
+  }
+  
 });
