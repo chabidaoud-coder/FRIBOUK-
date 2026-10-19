@@ -337,14 +337,47 @@ if (voirProduits && listeProduitsAffiches) {
         if (erreurConnexion || !user) {
           messageProduit.textContent = "Connecte-toi avant d'ajouter un produit.";
           return;
-        }
+        }        
+let photoUrl = null;
+
+if (photo) {
+  if (!photo.type.startsWith("image/")) {
+    messageProduit.textContent = "Choisis un fichier image.";
+    return;
+  }
+
+  if (photo.size > 2 * 1024 * 1024) {
+    messageProduit.textContent = "La photo ne doit pas dépasser 2 Mo.";
+    return;
+  }
+
+  const extension = photo.name.split(".").pop().toLowerCase();
+  const cheminPhoto = user.id + "/" + Date.now() + "." + extension;
+
+  const { error: erreurPhoto } = await sb.storage
+    .from("Produits-photo")
+    .upload(cheminPhoto, photo);
+
+  if (erreurPhoto) {
+    messageProduit.textContent = "Erreur photo : " + erreurPhoto.message;
+    return;
+  }
+
+  const { data: urlPhoto } = sb.storage
+    .from("Produits-photo")
+    .getPublicUrl(cheminPhoto);
+
+  photoUrl = urlPhoto.publicUrl;
+}
+        
 
         const { error } = await sb.from("produits").insert({
           boutique_id: boutiqueId,
           proprietaire: user.id,
           nom: nom,
           description: description,
-          prix: prix
+          prix: prix,
+          photo_url: photoUrl
         });
 
         if (error) {
