@@ -193,6 +193,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
   afficherBoutiques(); 
 
+  /* Charger les boutiques dans le formulaire produit */
+  async function chargerBoutiquesDansListe() {
+    const selectBoutique = document.getElementById("boutique-produit");
+    if (!selectBoutique) return;
+
+    const { data: utilisateur } = await sb.auth.getUser();
+    if (!utilisateur.user) {
+      selectBoutique.innerHTML =
+        '<option value="">Connecte-toi pour choisir une boutique</option>';
+      return;
+    }
+
+    const { data, error } = await sb
+      .from("boutiques")
+      .select("id, nom")
+      .eq("proprietaire", utilisateur.user.id)
+      .order("nom");
+
+    if (error) {
+      console.error("Erreur de chargement des boutiques :", error.message);
+      selectBoutique.innerHTML =
+        '<option value="">Impossible de charger les boutiques</option>';
+      return;
+    }
+
+    selectBoutique.innerHTML =
+      '<option value="">Sélectionne une boutique</option>';
+
+    (data || []).forEach(function (boutique) {
+      const option = document.createElement("option");
+      option.value = boutique.id;
+      option.textContent = boutique.nom;
+      selectBoutique.appendChild(option);
+    });
+  }
+
+  chargerBoutiquesDansListe();
+  
   
   if (ouvrirBoutique && formulaireBoutique) {
     ouvrirBoutique.addEventListener("click", function () {
