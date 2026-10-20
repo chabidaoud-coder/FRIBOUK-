@@ -248,10 +248,18 @@ if (voirProduits && listeProduitsAffiches) {
       "<h3>Produits disponibles</h3><p>Chargement...</p>";
 
     try {
-      const { data, error } = await sb
-        .from("produits")
-        .select("id, nom, description, prix, photo_url")
-        .order("created_at", { ascending: false });
+      const boutiqueId = document.getElementById("boutique-produit").value;
+
+if (!boutiqueId) {
+  alert("Choisis d'abord une boutique.");
+  return;
+}
+
+const { data, error } = await sb
+  .from("produits")
+  .select("id, nom, description, prix, photo_url")
+  .eq("boutique_id", boutiqueId)
+  .order("created_at", { ascending: false });
 
       if (error) throw error;
 
