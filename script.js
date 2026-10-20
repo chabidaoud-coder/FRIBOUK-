@@ -391,7 +391,8 @@ if (voirProduits && listeProduitsAffiches) {
     });
   }
   /* ENREGISTRER UN PRODUIT DANS SUPABASE */
-  const boutonEnregistrerProduit = document.getElementById("ouvrir-formulaire-produit");
+  const boutonEnregistrerProduit =
+  document.getElementById("enregistrer-produit");
   const messageProduit = document.getElementById("message-produit");
 
   if (boutonEnregistrerProduit) {
