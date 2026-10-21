@@ -58,6 +58,26 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("form-connexion");
   const boutonInscription = document.getElementById("inscription");
   const messageConnexion = document.getElementById("message-connexion");
+  
+const boutonGoogle = document.getElementById("connexion-google");
+
+if (boutonGoogle) {
+  boutonGoogle.addEventListener("click", async function () {
+    afficherConnexion("Ouverture de la connexion Google...");
+
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "https://chabidao.github.io/FRIBOUK/"
+      }
+    });
+
+    if (error) {
+      afficherConnexion("Erreur Google : " + error.message);
+    }
+  });
+}
+  
 
   function afficherConnexion(texte) {
     if (messageConnexion) messageConnexion.textContent = texte;
