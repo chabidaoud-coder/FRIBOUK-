@@ -235,9 +235,9 @@ async function chargerBoutiquesDansListe() {
   }
 
   const { data: boutiques, error } = await sb
-    .from("boutiques")
-    .select("id, nom, proprietaire")
-    .order("nom");
+  .from("boutiques")
+  .select("id, nom")
+  .order("nom");
 
   if (error) {
     console.error("Erreur de chargement des boutiques :", error.message);
