@@ -214,43 +214,57 @@ if (boutonGoogle) {
   afficherBoutiques(); 
 
   /* Charger les boutiques dans le formulaire produit */
-  async function chargerBoutiquesDansListe() {
-    const selectBoutique = document.getElementById("boutique-produit");
-    if (!selectBoutique) return;
+  
+async function chargerBoutiquesDansListe() {
+  const selectBoutique = document.getElementById("boutique-produit");
+  const selectAcheteur = document.getElementById("boutique-acheteur");
 
-    const { data: utilisateur } = await sb.auth.getUser();
-    if (!utilisateur.user) {
-      selectBoutique.innerHTML =
-        '<option value="">Connecte-toi pour choisir une boutique</option>';
-      return;
-    }
+  if (!selectBoutique && !selectAcheteur) return;
 
-    const { data, error } = await sb
-      .from("boutiques")
-      .select("id, nom")
-      .eq("proprietaire", utilisateur.user.id)
-      .order("nom");
+  const { data: resultatUtilisateur } = await sb.auth.getUser();
+  const utilisateur = resultatUtilisateur.user;
 
-    if (error) {
-      console.error("Erreur de chargement des boutiques :", error.message);
-      selectBoutique.innerHTML =
-        '<option value="">Impossible de charger les boutiques</option>';
-      return;
-    }
-
+  if (selectBoutique) {
     selectBoutique.innerHTML =
       '<option value="">Sélectionne une boutique</option>';
-
-    (data || []).forEach(function (boutique) {
-      const option = document.createElement("option");
-      option.value = boutique.id;
-      option.textContent = boutique.nom;
-      selectBoutique.appendChild(option);
-    });
   }
 
-  chargerBoutiquesDansListe();
-  
+  if (selectAcheteur) {
+    selectAcheteur.innerHTML =
+      '<option value="">Choisir une boutique</option>';
+  }
+
+  const { data: boutiques, error } = await sb
+    .from("boutiques")
+    .select("id, nom, proprietaire")
+    .order("nom");
+
+  if (error) {
+    console.error("Erreur de chargement des boutiques :", error.message);
+    if (selectAcheteur) {
+      selectAcheteur.innerHTML =
+        '<option value="">Impossible de charger les boutiques</option>';
+    }
+    return;
+  }
+
+  (boutiques || []).forEach(function (boutique) {
+    if (selectAcheteur) {
+      const optionAcheteur = document.createElement("option");
+      optionAcheteur.value = boutique.id;
+      optionAcheteur.textContent = boutique.nom;
+      selectAcheteur.appendChild(optionAcheteur);
+    }
+
+    if (selectBoutique && utilisateur &&
+        boutique.proprietaire === utilisateur.id) {
+      const optionProduit = document.createElement("option");
+      optionProduit.value = boutique.id;
+      optionProduit.textContent = boutique.nom;
+      selectBoutique.appendChild(optionProduit);
+    }
+  });
+}
   
   if (ouvrirBoutique && formulaireBoutique) {
     ouvrirBoutique.addEventListener("click", function () {
@@ -268,7 +282,7 @@ if (voirProduits && listeProduitsAffiches) {
       "<h3>Produits disponibles</h3><p>Chargement...</p>";
 
     try {
-      const boutiqueId = document.getElementById("boutique-produit").value;
+      const boutiqueId = document.getElementById("boutique-acheteur").value;
 
 if (!boutiqueId) {
   alert("Choisis d'abord une boutique.");
