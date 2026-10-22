@@ -219,11 +219,6 @@ async function chargerBoutiquesDansListe() {
   const selectBoutique = document.getElementById("boutique-produit");
   const selectAcheteur = document.getElementById("boutique-acheteur");
 
-  if (!selectBoutique && !selectAcheteur) return;
-
-  const { data: resultatUtilisateur } = await sb.auth.getUser();
-  const utilisateur = resultatUtilisateur.user;
-
   if (selectBoutique) {
     selectBoutique.innerHTML =
       '<option value="">Sélectionne une boutique</option>';
@@ -234,20 +229,27 @@ async function chargerBoutiquesDansListe() {
       '<option value="">Choisir une boutique</option>';
   }
 
+  // Charger toutes les boutiques pour l'acheteur
   const { data: boutiques, error } = await sb
-  .from("boutiques")
-  .select("id, nom")
-  .order("nom");
+    .from("boutiques")
+    .select("id, nom, proprietaire")
+    .order("nom");
 
   if (error) {
     console.error("Erreur de chargement des boutiques :", error.message);
+
     if (selectAcheteur) {
       selectAcheteur.innerHTML =
-        '<option value="">Impossible de charger les boutiques</option>';
+        '<option value="">Erreur de chargement</option>';
+    }
+    if (selectBoutique) {
+      selectBoutique.innerHTML =
+        '<option value="">Erreur de chargement</option>';
     }
     return;
   }
 
+  // Remplir le menu acheteur avec toutes les boutiques
   (boutiques || []).forEach(function (boutique) {
     if (selectAcheteur) {
       const optionAcheteur = document.createElement("option");
@@ -255,16 +257,25 @@ async function chargerBoutiquesDansListe() {
       optionAcheteur.textContent = boutique.nom;
       selectAcheteur.appendChild(optionAcheteur);
     }
-
-    if (selectBoutique && utilisateur &&
-        boutique.proprietaire === utilisateur.id) {
-      const optionProduit = document.createElement("option");
-      optionProduit.value = boutique.id;
-      optionProduit.textContent = boutique.nom;
-      selectBoutique.appendChild(optionProduit);
-    }
   });
+
+  // Remplir le menu vendeur avec ses propres boutiques
+  const { data: resultatUtilisateur } = await sb.auth.getUser();
+  const utilisateur = resultatUtilisateur?.user;
+
+  if (selectBoutique && utilisateur) {
+    (boutiques || []).forEach(function (boutique) {
+      if (boutique.proprietaire === utilisateur.id) {
+        const optionProduit = document.createElement("option");
+        optionProduit.value = boutique.id;
+        optionProduit.textContent = boutique.nom;
+        selectBoutique.appendChild(optionProduit);
+      }
+    });
+  }
 }
+  
+
   
   if (ouvrirBoutique && formulaireBoutique) {
     ouvrirBoutique.addEventListener("click", function () {
