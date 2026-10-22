@@ -230,7 +230,7 @@ async function chargerBoutiquesDansListe() {
   }
 
   // Charger toutes les boutiques pour l'acheteur
-  const { data: boutiques, error } = await sb
+const { data: boutiques, error } = await sb
   .from("boutiques")
   .select("id, nom, proprietaire")
   .order("nom");
@@ -240,6 +240,8 @@ if (error) {
   alert("Erreur de chargement : " + error.message);
   return;
 }
+
+console.log("Boutiques chargées :", boutiques);
 
 console.log("Boutiques chargées :", boutiques);
   // Remplir le menu acheteur avec toutes les boutiques
