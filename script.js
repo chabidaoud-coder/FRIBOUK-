@@ -231,24 +231,17 @@ async function chargerBoutiquesDansListe() {
 
   // Charger toutes les boutiques pour l'acheteur
   const { data: boutiques, error } = await sb
-    .from("boutiques")
-    .select("id, nom, proprietaire")
-    .order("nom");
+  .from("boutiques")
+  .select("id, nom, proprietaire")
+  .order("nom");
 
-  if (error) {
-    console.error("Erreur de chargement des boutiques :", error.message);
+if (error) {
+  console.error("Erreur chargement boutiques :", error.message);
+  alert("Erreur de chargement : " + error.message);
+  return;
+}
 
-    if (selectAcheteur) {
-      selectAcheteur.innerHTML =
-        '<option value="">Erreur de chargement</option>';
-    }
-    if (selectBoutique) {
-      selectBoutique.innerHTML =
-        '<option value="">Erreur de chargement</option>';
-    }
-    return;
-  }
-
+console.log("Boutiques chargées :", boutiques);
   // Remplir le menu acheteur avec toutes les boutiques
   (boutiques || []).forEach(function (boutique) {
     if (selectAcheteur) {
