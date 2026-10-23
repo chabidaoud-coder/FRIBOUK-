@@ -1,285 +1,346 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101827">
-  <title>FRIBOUK — Votre intelligence artificielle</title>
+  <meta name="theme-color" content="#0b2b2a">
+  <title>FRIBOUK — IA, création et commerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>FRIBOUK</h1>
-    <p>Votre espace d'intelligence artificielle</p>
-  </header>
 
-  <main>
-    <section class="accueil">
-      <h2>Bienvenue sur FRIBOUK</h2>
-      <p>Créez, apprenez, analysez et développez vos idées.</p>
-      <button id="commencer">Commencer</button>
-    </section>
+<header class="entete">
+  <button class="logo" data-vue="accueil" type="button">FRIBOUK</button>
+  <div class="entete-droite">
+    <button class="pastille" id="btn-credits" data-vue="tableau" type="button" hidden>
+      <span id="credits-entete">0</span> crédits
+    </button>
+    <button class="bouton bouton-petit" id="btn-panier" data-vue="panier" type="button">
+      Panier <span id="compteur-panier" class="badge">0</span>
+    </button>
+    <button class="bouton bouton-petit bouton-or" id="btn-auth" data-vue="auth" type="button">Se connecter</button>
+  </div>
+</header>
 
-    <section id="outils">
-      <h2>Bienvenue sur FRIBOUK</h2>
-      <p>Votre espace d'intelligence artificielle.</p>
+<main>
 
-      <button class="outil">IA Chat</button>
-      <button class="outil">Générateur de textes</button>
-      <button class="outil">Générateur d'images</button>
-      <button class="outil">Générateur de vidéos</button>
-      <button class="outil">Traduction</button>
-      <button class="outil">Transcription audio</button>
-    
-    </section>
+  <!-- ACCUEIL -->
+  <section class="vue" id="vue-accueil">
+    <div class="hero">
+      <h1>Créez avec l'IA.<br>Vendez depuis votre téléphone.</h1>
+      <p>FRIBOUK réunit l'intelligence artificielle, votre boutique en ligne et le marché BARKA dans un seul espace, pensé pour les mobiles.</p>
+      <div class="actions">
+        <button class="bouton bouton-or" id="btn-commencer" type="button">Commencer</button>
+        <button class="bouton bouton-contour" data-vue="barka" type="button">Voir BARKA</button>
+      </div>
+    </div>
 
-    <section id="zone-chat" style="display:none; padding:20px;">
-      <h2>FRIBOUK — IA Chat</h2>
+    <div class="grille">
+      <button class="carte-outil" data-vue="chat" type="button">
+        <span class="icone">💬</span><strong>IA Chat</strong><small>Posez vos questions et obtenez des réponses.</small>
+      </button>
+      <button class="carte-outil" data-vue="texte" type="button">
+        <span class="icone">✍️</span><strong>Générateur de textes</strong><small>Publicités, descriptions, scripts, cours, plans d'affaires.</small>
+      </button>
+      <button class="carte-outil" data-vue="studio" type="button">
+        <span class="icone">🎨</span><strong>Studio créatif</strong><small>Images, vidéos et audios (bientôt).</small>
+      </button>
+      <button class="carte-outil" data-vue="boutiques" type="button">
+        <span class="icone">🏪</span><strong>Mes boutiques</strong><small>Créez votre boutique et ajoutez vos produits.</small>
+      </button>
+      <button class="carte-outil" data-vue="barka" type="button">
+        <span class="icone">🛍️</span><strong>BARKA</strong><small>Le marché multi-vendeurs de FRIBOUK.</small>
+      </button>
+      <button class="carte-outil" data-vue="herboriste" type="button">
+        <span class="icone">🌿</span><strong>Herboriste Guiyagui</strong><small>Santé, nature et traditions — Parakou.</small>
+      </button>
+    </div>
 
-      <div id="messages-chat"
-           style="min-height:150px; padding:10px; border:1px solid #ccc; border-radius:8px;">
-        <p>Bienvenue ! Écris ton message ci-dessous.</p>
+    <div class="bandeau">
+      <h2>Choisissez votre formule</h2>
+      <p>20 crédits gratuits par jour pour démarrer.</p>
+      <button class="bouton bouton-contour" data-vue="abonnements" type="button">Voir les abonnements</button>
+    </div>
+  </section>
+
+  <!-- CONNEXION -->
+  <section class="vue" id="vue-auth" hidden>
+    <div class="panneau etroit">
+      <h2 id="titre-auth">Connexion</h2>
+
+      <form id="form-connexion" autocomplete="on">
+        <div id="champ-nom" hidden>
+          <label for="nom">Nom et prénom (ou nom d'activité)</label>
+          <input type="text" id="nom" autocomplete="name" placeholder="Ex. : Aminatou Bio">
+        </div>
+        <label for="email">Adresse e-mail</label>
+        <input type="email" id="email" autocomplete="email" placeholder="vous@exemple.com" required>
+        <label for="mot-de-passe">Mot de passe</label>
+        <input type="password" id="mot-de-passe" autocomplete="current-password" placeholder="6 caractères minimum" required>
+
+        <button class="bouton bouton-or bloc" type="submit" id="btn-valider-auth">Se connecter</button>
+      </form>
+
+      <button class="lien" type="button" id="bascule-auth">Pas de compte ? Créer un compte</button>
+      <button class="lien" type="button" id="mot-de-passe-oublie">Mot de passe oublié ?</button>
+
+      <div class="separateur"><span>ou</span></div>
+      <button class="bouton bouton-contour bloc" type="button" id="connexion-google">Continuer avec Google</button>
+
+      <p class="message" id="message-connexion" role="status"></p>
+    </div>
+
+    <div class="panneau etroit" id="bloc-nouveau-mdp" hidden>
+      <h2>Nouveau mot de passe</h2>
+      <label for="nouveau-mdp">Choisissez un nouveau mot de passe</label>
+      <input type="password" id="nouveau-mdp" autocomplete="new-password" placeholder="6 caractères minimum">
+      <button class="bouton bouton-or bloc" type="button" id="valider-nouveau-mdp">Enregistrer le mot de passe</button>
+    </div>
+  </section>
+
+  <!-- TABLEAU DE BORD -->
+  <section class="vue" id="vue-tableau" hidden>
+    <div class="panneau">
+      <h2>Bonjour <span id="nom-utilisateur"></span></h2>
+      <div class="stats">
+        <div class="stat"><b id="credits">0</b><span>crédits disponibles</span></div>
+        <div class="stat"><b id="plan-utilisateur">FREE</b><span>formule</span></div>
+        <div class="stat"><b id="role-utilisateur">utilisateur</b><span>rôle</span></div>
+      </div>
+      <p class="aide">Barème : texte 1 crédit · image 5 · audio 5 · vidéo 30 minimum. La formule FREE recharge 20 crédits chaque jour.</p>
+      <div class="actions">
+        <button class="bouton bouton-or" data-vue="chat" type="button">Ouvrir le chat</button>
+        <button class="bouton bouton-contour" data-vue="texte" type="button">Générer un texte</button>
+        <button class="bouton bouton-contour" data-vue="creations" type="button">Mes créations</button>
+        <button class="bouton bouton-contour" data-vue="commandes" type="button">Mes commandes</button>
+        <button class="bouton bouton-contour" id="btn-deconnexion" type="button">Se déconnecter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="vue" id="vue-chat" hidden>
+    <div class="panneau">
+      <h2>FRIBOUK IA — Chat</h2>
+      <div class="ligne-outils">
+        <select id="liste-conversations" aria-label="Conversations précédentes"></select>
+        <button class="bouton bouton-petit" id="nouvelle-conversation" type="button">Nouvelle</button>
+        <button class="bouton bouton-petit bouton-contour" id="supprimer-conversation" type="button">Supprimer</button>
+      </div>
+      <div id="messages-chat" class="fil" aria-live="polite">
+        <p class="vide">Posez votre première question. Chaque réponse coûte 1 crédit.</p>
+      </div>
+      <textarea id="saisie-chat" rows="3" maxlength="4000" placeholder="Écrivez votre message…"></textarea>
+      <button class="bouton bouton-or bloc" id="envoyer-chat" type="button">Envoyer</button>
+    </div>
+  </section>
+
+  <!-- GÉNÉRATEUR DE TEXTES -->
+  <section class="vue" id="vue-texte" hidden>
+    <div class="panneau">
+      <h2>Générateur de textes</h2>
+      <label for="type-texte">Que voulez-vous créer ?</label>
+      <select id="type-texte">
+        <option value="article">Article ou publication</option>
+        <option value="produit">Description de produit</option>
+        <option value="publicite">Publicité commerciale</option>
+        <option value="script_video">Script vidéo</option>
+        <option value="whatsapp">Message WhatsApp</option>
+        <option value="reseaux">Publication Facebook / TikTok</option>
+        <option value="resume">Résumé</option>
+        <option value="cours">Cours et exercices</option>
+        <option value="plan_affaires">Plan d'affaires</option>
+        <option value="lettre">Lettre ou document professionnel</option>
+        <option value="traduction">Traduction</option>
+      </select>
+      <label for="demande-texte">Décrivez votre demande</label>
+      <textarea id="demande-texte" rows="5" maxlength="4000" placeholder="Ex. : Une publicité pour mon savon au karité, ton chaleureux, 5 lignes."></textarea>
+      <button class="bouton bouton-or bloc" id="generer-texte" type="button">Générer (1 crédit)</button>
+      <div id="resultat-texte" class="resultat" hidden>
+        <pre id="texte-genere"></pre>
+        <button class="bouton bouton-petit" id="copier-texte" type="button">Copier</button>
+      </div>
+      <p class="message" id="message-texte" role="status"></p>
+    </div>
+  </section>
+
+  <!-- STUDIO -->
+  <section class="vue" id="vue-studio" hidden>
+    <div class="panneau">
+      <h2>Studio créatif</h2>
+      <p class="aide">Ces outils seront activés quand un fournisseur d'images, de vidéos et de voix sera branché. Aucune fausse génération n'est affichée en attendant.</p>
+      <div class="grille">
+        <div class="carte-outil inactive"><span class="icone">🖼️</span><strong>Images</strong><small>5 crédits · bientôt</small></div>
+        <div class="carte-outil inactive"><span class="icone">🎬</span><strong>Vidéos</strong><small>30 crédits minimum · bientôt</small></div>
+        <div class="carte-outil inactive"><span class="icone">🎙️</span><strong>Audios et voix off</strong><small>5 crédits · bientôt</small></div>
+        <div class="carte-outil inactive"><span class="icone">📝</span><strong>Transcription</strong><small>Bientôt</small></div>
+      </div>
+      <button class="bouton bouton-contour" data-vue="texte" type="button">En attendant : générer un texte</button>
+    </div>
+  </section>
+
+  <!-- MES CRÉATIONS -->
+  <section class="vue" id="vue-creations" hidden>
+    <div class="panneau">
+      <h2>Mes créations</h2>
+      <div id="liste-creations"></div>
+    </div>
+  </section>
+
+  <!-- MES BOUTIQUES -->
+  <section class="vue" id="vue-boutiques" hidden>
+    <div class="panneau">
+      <h2>Mes boutiques</h2>
+      <div id="mes-boutiques"></div>
+      <button class="bouton bouton-or" id="ouvrir-boutique" type="button">Créer une boutique</button>
+
+      <div id="formulaire-boutique" class="sous-panneau" hidden>
+        <h3>Nouvelle boutique</h3>
+        <label for="nom-boutique">Nom de la boutique</label>
+        <input type="text" id="nom-boutique" maxlength="80" placeholder="Nom de votre boutique">
+        <label for="categorie-boutique">Catégorie</label>
+        <input type="text" id="categorie-boutique" maxlength="60" placeholder="Ex. : Cosmétiques naturels">
+        <label for="localisation-boutique">Localisation</label>
+        <input type="text" id="localisation-boutique" maxlength="80" placeholder="Ex. : Parakou, Bénin">
+        <label for="description-boutique">Description</label>
+        <textarea id="description-boutique" rows="3" maxlength="500" placeholder="Présentez votre boutique"></textarea>
+        <button class="bouton bouton-or bloc" id="enregistrer-boutique" type="button">Enregistrer la boutique</button>
+        <p class="message" id="message-boutique" role="status"></p>
+      </div>
+    </div>
+
+    <div class="panneau">
+      <h2>Mes produits</h2>
+      <button class="bouton bouton-contour" id="afficher-formulaire-produit" type="button">Ajouter un produit</button>
+
+      <div id="formulaire-produit" class="sous-panneau" hidden>
+        <h3>Nouveau produit</h3>
+        <label for="boutique-produit">Boutique</label>
+        <select id="boutique-produit"><option value="">Choisir une boutique</option></select>
+        <label for="nom-produit">Nom du produit</label>
+        <input type="text" id="nom-produit" maxlength="100" placeholder="Ex. : Savon naturel">
+        <label for="prix-produit">Prix (FCFA)</label>
+        <input type="number" id="prix-produit" min="0" step="1" inputmode="numeric" placeholder="Ex. : 2500">
+        <label for="stock-produit">Stock disponible</label>
+        <input type="number" id="stock-produit" min="0" step="1" inputmode="numeric" value="1">
+        <label for="categorie-produit">Catégorie</label>
+        <input type="text" id="categorie-produit" maxlength="60" placeholder="Ex. : Savons">
+        <label for="description-produit">Description</label>
+        <textarea id="description-produit" rows="3" maxlength="800" placeholder="Décrivez votre produit"></textarea>
+        <label for="photo-produit">Photo (2 Mo maximum)</label>
+        <input type="file" id="photo-produit" accept="image/*">
+        <button class="bouton bouton-or bloc" id="enregistrer-produit" type="button">Enregistrer le produit</button>
+        <p class="message" id="message-produit" role="status"></p>
       </div>
 
-      <textarea id="saisie-chat"
-                placeholder="Écris ton message ici..."
-                rows="3"
-                style="width:100%; margin-top:10px;"></textarea>
+      <div id="mes-produits"></div>
+    </div>
+  </section>
 
-      <button id="envoyer-chat" type="button">
-        Envoyer
-      </button>
+  <!-- BARKA -->
+  <section class="vue" id="vue-barka" hidden>
+    <div class="panneau">
+      <h2>BARKA — le marché FRIBOUK</h2>
+      <div class="ligne-outils">
+        <input type="search" id="recherche-produit" placeholder="Rechercher un produit">
+        <button class="bouton bouton-petit" id="lancer-recherche" type="button">Chercher</button>
+      </div>
+      <select id="filtre-boutique" aria-label="Filtrer par boutique"><option value="">Toutes les boutiques</option></select>
+      <div id="liste-produits" class="grille-produits"></div>
+    </div>
+  </section>
 
-      <button id="fermer-chat" type="button">
-        Fermer le chat
-      </button>
-    </section>
-    
-<!-- ESPACE CONNEXION FRIBOUK -->
-<section id="connexion" class="espace">
-  <h2>Connexion à FRIBOUK</h2>
+  <!-- HERBORISTE -->
+  <section class="vue" id="vue-herboriste" hidden>
+    <div class="hero hero-nature">
+      <h1>Herboriste Guiyagui</h1>
+      <p>Santé, Nature et Traditions — Parakou, Ganou-Gourou, Bénin.</p>
+    </div>
+    <div class="panneau">
+      <p class="aide">Les informations sur les plantes sont éducatives. Elles ne remplacent pas un avis médical : en cas de maladie, consultez un professionnel de santé.</p>
+      <h2>Plantes et produits</h2>
+      <div id="hg-plantes" class="grille-produits"></div>
+      <h2>Conseils</h2>
+      <div id="hg-conseils"></div>
+      <h2>Traditions</h2>
+      <div id="hg-traditions"></div>
+    </div>
+    <div class="panneau">
+      <h2>Demander un rendez-vous</h2>
+      <label for="hg-date">Date souhaitée</label>
+      <input type="datetime-local" id="hg-date">
+      <label for="hg-message">Votre demande</label>
+      <textarea id="hg-message" rows="3" maxlength="600" placeholder="Décrivez brièvement votre besoin (évitez les informations médicales détaillées)"></textarea>
+      <button class="bouton bouton-or bloc" id="hg-envoyer" type="button">Envoyer la demande</button>
+      <p class="message" id="message-hg" role="status"></p>
+    </div>
+  </section>
 
-  <form id="form-connexion">
-    <label for="email">Adresse e-mail</label>
-    <input
-      type="email"
-      id="email"
-      placeholder="Votre adresse e-mail"
-      required
-    >
+  <!-- PANIER -->
+  <section class="vue" id="vue-panier" hidden>
+    <div class="panneau">
+      <h2>Mon panier</h2>
+      <div id="lignes-panier"></div>
+      <p class="total">Total : <b id="total-panier">0</b> FCFA</p>
+      <div id="bloc-commande" hidden>
+        <label for="adresse-livraison">Adresse de livraison</label>
+        <input type="text" id="adresse-livraison" maxlength="200" placeholder="Quartier, ville">
+        <label for="tel-livraison">Téléphone</label>
+        <input type="tel" id="tel-livraison" maxlength="30" placeholder="+229 …">
+        <button class="bouton bouton-or bloc" id="passer-commande" type="button">Passer la commande</button>
+        <p class="aide">Le paiement en ligne (Mobile Money, carte) n'est pas encore branché : le vendeur vous contacte pour convenir du règlement.</p>
+      </div>
+      <p class="message" id="message-panier" role="status"></p>
+    </div>
+  </section>
 
-    <label for="mot-de-passe">Mot de passe</label>
-    <input
-      type="password"
-      id="mot-de-passe"
-      placeholder="Votre mot de passe"
-      required
-    >
+  <!-- COMMANDES -->
+  <section class="vue" id="vue-commandes" hidden>
+    <div class="panneau">
+      <h2>Mes commandes</h2>
+      <div id="liste-commandes"></div>
+    </div>
+    <div class="panneau">
+      <h2>Commandes reçues (vendeur)</h2>
+      <div id="liste-commandes-recues"></div>
+    </div>
+  </section>
 
-    <button type="submit">Se connecter</button>
-  
-<button type="button" id="mot-de-passe-oublie">
-  Mot de passe oublié ?
-</button>
-<p id="message-reinitialisation"></p>
+  <!-- ABONNEMENTS -->
+  <section class="vue" id="vue-abonnements" hidden>
+    <div class="panneau">
+      <h2>Abonnements</h2>
+      <div class="grille">
+        <div class="carte-plan"><h3>FREE</h3><p class="prix">Gratuit</p><ul><li>20 crédits par jour</li><li>Outils IA limités</li><li>Compte personnel</li></ul></div>
+        <div class="carte-plan"><h3>BASIC</h3><p class="prix">Tarif à définir</p><ul><li>Plus de crédits</li><li>Historique des créations</li></ul></div>
+        <div class="carte-plan mise-en-avant"><h3>PRO</h3><p class="prix">Tarif à définir</p><ul><li>Quota élevé</li><li>Outils créatifs élargis</li><li>Traitement prioritaire</li></ul></div>
+        <div class="carte-plan"><h3>BUSINESS</h3><p class="prix">Tarif à définir</p><ul><li>Équipes et entreprises</li><li>Outils commerciaux avancés</li></ul></div>
+      </div>
+      <p class="aide">La souscription en ligne sera ouverte dès que le paiement sera intégré et testé.</p>
+    </div>
+  </section>
 
-    <button type="button" id="inscription">
-      Créer un compte
-    </button>
-  </form>
-  <!-- CONNEXION AVEC GOOGLE -->
-<button type="button" id="connexion-google">
-  🔵 Continuer avec Google
-</button>
+</main>
 
-  <p id="message-connexion"></p>
-</section>
+<nav class="navigation" aria-label="Navigation principale">
+  <button data-vue="accueil" type="button"><span>🏠</span>Accueil</button>
+  <button data-vue="chat" type="button"><span>💬</span>IA</button>
+  <button data-vue="barka" type="button"><span>🛍️</span>BARKA</button>
+  <button data-vue="boutiques" type="button"><span>🏪</span>Boutiques</button>
+  <button data-vue="tableau" type="button"><span>👤</span>Compte</button>
+</nav>
 
-<!-- TABLEAU DE BORD -->
-<section id="tableau-de-bord" class="espace">
-  <h2>Mon espace de travail</h2>
-  <p>Bienvenue dans votre espace FRIBOUK.</p>
+<footer class="pied">
+  <p>© FRIBOUK — Tous droits réservés</p>
+</footer>
 
-  <p>Crédits disponibles :
-    <strong id="credits">20</strong>
-  </p>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-  <button type="button" class="outil"
-    onclick="ouvrirEspace('zone-chat')">
-    IA Chat
-  </button>
-
-  <button type="button" class="outil"
-    onclick="ouvrirEspace('espace-textes')">
-    Générateur de textes
-  </button>
-
-  <button type="button" class="outil"
-    onclick="ouvrirEspace('espace-images')">
-    Générateur d'images
-  </button>
-
-  <button type="button" class="outil"
-    onclick="ouvrirEspace('espace-videos')">
-    Générateur de vidéos
-  </button>
-
-  <button type="button" class="outil"
-    onclick="ouvrirEspace('espace-formations')">
-    Formations
-  </button>
-
-  <button type="button" class="outil"
-    onclick="ouvrirEspace('espace-boutiques')">
-    Boutiques en ligne
-  </button>
-</section>
-
-<!-- ESPACE TEXTES -->
-<section id="espace-textes" class="espace">
-  <h2>Générateur de textes</h2>
-  <textarea id="demande-texte"
-    placeholder="Décris le texte à créer"></textarea>
-  <button type="button">Générer le texte</button>
-</section>
-
-<!-- ESPACE IMAGES -->
-<section id="espace-images" class="espace">
-  <h2>Générateur d'images</h2>
-  <textarea id="demande-image"
-    placeholder="Décris l'image souhaitée"></textarea>
-  <button type="button">Générer l'image</button>
-</section>
-
-<!-- ESPACE VIDÉOS -->
-<section id="espace-videos" class="espace">
-  <h2>Générateur de vidéos</h2>
-  <textarea id="demande-video"
-    placeholder="Décris la vidéo souhaitée"></textarea>
-  <button type="button">Préparer la vidéo</button>
-</section>
-
-
-<!-- ESPACE FORMATIONS -->
-<section id="espace-formations" class="espace">
-  <h2>Formations</h2>
-  <p>Découvrez les cours et les formations disponibles.</p>
-</section>
-
-<!-- ESPACE BOUTIQUES -->
-<section id="espace-boutiques" class="espace">
-  <h2>Boutiques FRIBOUK</h2>
-  <p>Découvre les boutiques et ajoute tes produits.</p>
-
-  
-<button type="button" id="voir-produits">
-  Afficher les produits
-</button>
-
-<button type="button" id="ouvrir-boutique">
-  Créer ma boutique
-</button>
-
-<label for="boutique-acheteur">Sélectionner une boutique</label>
-<select id="boutique-acheteur">
-  <option value="">Choisir une boutique</option>
-</select>
-  
-
-  <div id="liste-produits" hidden>
-    <h3>Produits disponibles</h3>
-    <p>Les produits seront affichés ici.</p>
-  </div>
-  <div id="liste-boutiques"></div>
-
-<div id="liste-produits-affiches" hidden>
-  <h3>Produits disponibles</h3>
-  <p>Les produits seront affichés ici.</p>
-</div>
-
-  <div id="formulaire-boutique" hidden>
-    <h3>Créer ma boutique</h3>
-
-    <label for="nom-boutique">Nom de la boutique</label>
-    <input
-      type="text"
-      id="nom-boutique"
-      placeholder="Nom de ta boutique"
-      required
-    />
-
-    <label for="description-boutique">Description</label>
-    <textarea
-      id="description-boutique"
-      placeholder="Présente ta boutique"
-    ></textarea>
-
-    <button type="button" id="enregistrer-boutique">
-      Enregistrer ma boutique
-    </button>
-
-    <p id="message-boutique"></p>
-  </div>
-
-  <hr />
-
-  <h3>Gestion des produits</h3>
-
-  <button type="button" id="afficher-formulaire-produit">
-    Ajouter un produit
-  </button>
-
-  <div id="formulaire-produit" hidden>
-    <h3>Informations du produit</h3>
-
-    <label for="nom-produit">Nom du produit</label>
-    <input
-      type="text"
-      id="nom-produit"
-      placeholder="Ex. : Savon naturel"
-      required
-    />
-<label for="photo-produit">Photo du produit</label>
-<input type="file" id="photo-produit" accept="image/*">
-    <label for="prix-produit">Prix (FCFA)</label>
-    <input
-      type="number"
-      id="prix-produit"
-      min="0"
-      step="1"
-      placeholder="Ex. : 2500"
-      required
-    />
-
-    <label for="description-produit">Description</label>
-    <textarea
-      id="description-produit"
-      placeholder="Décris ton produit"
-    ></textarea>
-
-    
-<label for="boutique-produit">Choisir ma boutique</label>
-<select id="boutique-produit" required>
-  <option value="">Sélectionne une boutique</option>
-</select>
-
-    <button type="button" id="enregistrer-produit">
-  Enregistrer le produit
-    </button>
-
-    <p id="message-produit"></p>
-  </div>
-</section>
-  </main>
-
-
-  <footer>
-    <p>© FRIBOUK — Tous droits réservés</p>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js" defer></script>
 </body>
-</html>
-
+        </html>
+                    
