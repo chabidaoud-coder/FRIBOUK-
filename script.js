@@ -194,7 +194,7 @@ sb.auth.onAuthStateChange((evenement, session) => {
 
 /* ---------- IA : appel sécurisé via la fonction Supabase ---------- */
 async function appelerIA(corps) {
-  const { data, error } = await sb.functions.invoke("ia-chat", { body: corps });
+  const { data, error } = await sb.functions.invoke("hyper-processor",({ body: corps });
   if (error) {
     let message = error.message;
     try { const j = await error.context.json(); if (j && j.erreur) message = j.erreur; } catch (e) { /* ignore */ }
