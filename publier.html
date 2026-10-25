@@ -3,153 +3,303 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
 <title>FRIBOUK – Publier sur vos réseaux</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
-  :root { --vert:#1f5e46; --vert-clair:#e6f1ec; --encre:#1d2420; --gris:#68736d; --bord:#d5ddd8; --or:#b8821f; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:#f6f8f7; font-family:system-ui,sans-serif; color:var(--encre); }
-  .rs { max-width:560px; margin:0 auto; padding:20px 16px 40px; }
-  h1 { font-size:1.35rem; margin:0 0 4px; }
-  p.aide { color:var(--gris); margin:0 0 16px; font-size:.92rem; }
-  .bloc { background:#fff; border:1px solid var(--bord); border-radius:14px; padding:16px; margin-bottom:16px; }
-  label { display:block; font-weight:600; font-size:.9rem; margin:12px 0 6px; }
-  textarea, select, input[type=number], input[type=url], input[type=datetime-local] {
-    width:100%; padding:10px 12px; border:1px solid var(--bord); border-radius:10px; font:inherit; background:#fff; }
-  textarea { min-height:110px; resize:vertical; }
-  button { font:inherit; font-weight:600; border:0; border-radius:10px; padding:12px 16px; cursor:pointer;
-           background:var(--vert); color:#fff; width:100%; margin-top:14px; }
-  button.second { background:var(--vert-clair); color:var(--vert); margin-top:0; width:auto; padding:8px 12px; }
-  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline:3px solid var(--or); outline-offset:2px; }
-  .compte { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--bord); }
-  .compte:last-child { border-bottom:0; }
-  .vide, .bientot { color:var(--gris); font-size:.88rem; }
-  .sponso { background:var(--vert-clair); border-radius:10px; padding:12px; margin-top:12px; display:none; }
-  .sponso.actif { display:block; }
-  .msg { margin-top:12px; font-size:.92rem; min-height:1.2em; }
-  .msg.ok { color:var(--vert); } .msg.ko { color:#a3281c; }
-  a.retour { display:inline-block; margin-bottom:12px; color:var(--vert); font-weight:600; text-decoration:none; }
+  :root { --fond:#0b2620; --carte:#12372f; --carte2:#0f2f28; --bord:#25544a; --texte:#eef5f2; --doux:#a9c2ba;
+          --or:#e8b64a; --or-fonce:#b98a22; --vert:#2a9d78; --rouge:#ff8a7a; }
+  * { box-sizing:border-box; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px; line-height:1.45; padding-bottom:110px; }
+  .haut { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px; padding:12px 16px;
+          background:rgba(11,38,32,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--bord); }
+  .haut a { color:var(--or); text-decoration:none; font-weight:700; font-size:1.3rem; line-height:1; padding:6px 10px 6px 0; }
+  .haut h1 { font-size:1.1rem; margin:0; }
+  main { max-width:560px; margin:0 auto; padding:16px; }
+  .carte { background:var(--carte); border:1px solid var(--bord); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .carte h2 { font-size:1rem; margin:0 0 12px; display:flex; align-items:center; gap:10px; }
+  .num { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
+         background:var(--or); color:#1c1604; font-size:.85rem; font-weight:800; flex:none; }
+  label { display:block; font-size:.85rem; color:var(--doux); margin:12px 0 6px; font-weight:600; }
+  label.ligne { display:flex; align-items:center; gap:10px; color:var(--texte); font-weight:500; margin:10px 0 0; cursor:pointer; }
+  select, textarea, input[type=url], input[type=number], input[type=datetime-local] {
+    width:100%; padding:12px; background:var(--carte2); color:var(--texte); border:1px solid var(--bord);
+    border-radius:12px; font:inherit; font-size:1rem; }
+  textarea { min-height:180px; resize:vertical; }
+  input[type=checkbox] { width:20px; height:20px; accent-color:var(--or); flex:none; }
+  select:focus-visible, textarea:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
+    { outline:3px solid var(--or); outline-offset:2px; }
+  .btn { font:inherit; font-weight:700; font-size:1rem; border:0; border-radius:12px; padding:12px 16px; cursor:pointer;
+         background:var(--or); color:#1c1604; }
+  .btn:disabled { opacity:.55; cursor:default; }
+  .btn.contour { background:transparent; color:var(--or); border:1px solid var(--or); }
+  .rangee { display:flex; gap:10px; margin-top:10px; }
+  .rangee select { flex:1; min-width:0; }
+  .chips { display:flex; flex-direction:column; gap:8px; }
+  .chip { display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--carte2);
+          border:1px solid var(--bord); border-radius:12px; padding:10px 12px; }
+  .chip b { display:block; font-size:.95rem; }
+  .chip small { color:var(--doux); }
+  .chip button { background:none; border:0; color:var(--rouge); font:inherit; font-size:.85rem; cursor:pointer; padding:6px; }
+  .point { display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--vert); margin-right:8px; }
+  .puces { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .puce { font-size:.8rem; padding:5px 10px; border-radius:999px; border:1px dashed var(--bord); color:var(--doux); }
+  .aide, .vide { color:var(--doux); font-size:.88rem; margin:8px 0 0; }
+  .compteur { text-align:right; font-size:.8rem; color:var(--doux); margin-top:4px; }
+  .sous { background:var(--carte2); border:1px solid var(--bord); border-radius:12px; padding:12px; margin-top:10px; }
+  .apercu { background:#fff; color:#1c1e21; border-radius:12px; overflow:hidden; }
+  .apercu .tete { display:flex; align-items:center; gap:10px; padding:10px 12px; }
+  .avatar { width:38px; height:38px; border-radius:50%; background:var(--vert); color:#fff; font-weight:800;
+            display:flex; align-items:center; justify-content:center; flex:none; }
+  .apercu .nom { font-weight:700; font-size:.92rem; }
+  .apercu .quand { color:#65676b; font-size:.78rem; }
+  .apercu .corps { padding:0 12px 12px; white-space:pre-wrap; word-break:break-word; font-size:.95rem; }
+  .apercu .corps.vide { color:#8a8d91; font-style:italic; }
+  .apercu img { display:block; width:100%; max-height:320px; object-fit:cover; background:#e4e6eb; }
+  .barre { position:fixed; left:0; right:0; bottom:0; z-index:6; padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+           background:rgba(11,38,32,.96); border-top:1px solid var(--bord); }
+  .barre .in { max-width:560px; margin:0 auto; }
+  .barre .btn { width:100%; padding:14px; font-size:1.05rem; }
+  .msg { min-height:1.2em; margin-top:8px; font-size:.9rem; text-align:center; }
+  .msg.ok { color:#7be0b8; } .msg.ko { color:var(--rouge); }
+  .msg a { color:var(--or); }
+  .alerte { background:#3a2a0a; border:1px solid var(--or-fonce); color:#ffe2a0; border-radius:12px; padding:12px; margin-bottom:14px; font-size:.92rem; }
+  .alerte a { color:var(--or); font-weight:700; }
 </style>
 </head>
 <body>
-<main class="rs">
-  <a class="retour" href="index.html">← Retour à FRIBOUK</a>
+<header class="haut">
+  <a href="index.html" aria-label="Retour à FRIBOUK">←</a>
   <h1>Publier sur vos réseaux</h1>
-  <p class="aide">Connectez votre page, rédigez votre annonce, puis publiez ou sponsorisez.</p>
+</header>
 
-  <div class="bloc">
-    <label for="rs-shop" style="margin-top:0">Boutique à connecter</label>
-    <select id="rs-shop">
-      <option value="boutique">Ma boutique</option>
-      <option value="barka">BARKA</option>
-      <option value="herboriste">HERBORISTE GUIYAGUI</option>
-    </select>
-    <button id="rs-fb">Connecter une page Facebook</button>
-    <p class="bientot">TikTok et WhatsApp : bientôt disponibles.</p>
-    <div id="rs-comptes"></div>
+<main>
+  <div class="alerte" id="alerte" hidden>
+    Vous n'êtes pas connecté(e). <a href="index.html">Ouvrez FRIBOUK, touchez « Mon compte »</a>, puis revenez ici.
   </div>
 
-  <div class="bloc">
-    <label for="rs-compte" style="margin-top:0">Page de publication</label>
-    <select id="rs-compte"></select>
-
-    <label for="rs-texte">Texte de l'annonce</label>
-    <textarea id="rs-texte" placeholder="Décrivez votre produit, son prix et comment commander."></textarea>
-
-    <label for="rs-image">Adresse de la photo (optionnel)</label>
-    <input type="url" id="rs-image" placeholder="https://…">
-
-    <label for="rs-quand">Programmer pour plus tard (optionnel)</label>
-    <input type="datetime-local" id="rs-quand">
-
-    <label><input type="checkbox" id="rs-sponso"> Sponsoriser cette publication</label>
-    <div class="sponso" id="rs-sponso-box">
-      <label for="rs-budget" style="margin-top:0">Budget total (FCFA)</label>
-      <input type="number" id="rs-budget" min="1000" step="500" value="5000">
-      <p class="bientot">Le budget est enregistré avec la publication. La campagne payante sera lancée quand la pub Meta sera activée sur FRIBOUK.</p>
+  <section class="carte">
+    <h2><span class="num">1</span> Pages connectées</h2>
+    <div class="chips" id="rs-comptes"></div>
+    <div class="rangee">
+      <select id="rs-shop" aria-label="Boutique à rattacher">
+        <option value="boutique">Ma boutique</option>
+        <option value="barka">BARKA</option>
+        <option value="herboriste">HERBORISTE GUIYAGUI</option>
+      </select>
+      <button class="btn" id="rs-fb" type="button">+ Facebook</button>
     </div>
+    <div class="puces"><span class="puce">TikTok · bientôt</span><span class="puce">WhatsApp · bientôt</span></div>
+  </section>
 
-    <button id="rs-publier">Publier</button>
-    <div class="msg" id="rs-msg" role="status" aria-live="polite"></div>
-  </div>
+  <section class="carte">
+    <h2><span class="num">2</span> Que voulez-vous promouvoir ?</h2>
+    <label for="rs-produit" style="margin-top:0">Un de vos produits FRIBOUK</label>
+    <select id="rs-produit"><option value="">Texte libre (je l'écris moi-même)</option></select>
+    <label class="ligne"><input type="checkbox" id="rs-avert" checked> Ajouter l'avertissement santé</label>
+    <p class="aide">Choisir un produit remplit automatiquement l'annonce, la photo et le lien WhatsApp de la boutique.</p>
+  </section>
+
+  <section class="carte">
+    <h2><span class="num">3</span> Votre annonce</h2>
+    <label for="rs-compte" style="margin-top:0">Publier sur</label>
+    <select id="rs-compte"></select>
+    <label for="rs-texte">Texte de l'annonce</label>
+    <textarea id="rs-texte" maxlength="2000" placeholder="Décrivez votre produit, son prix et comment commander."></textarea>
+    <div class="compteur"><span id="rs-nb">0</span> / 2000</div>
+    <label for="rs-image">Adresse de la photo (optionnel)</label>
+    <input type="url" id="rs-image" placeholder="https://…" inputmode="url">
+  </section>
+
+  <section class="carte">
+    <h2><span class="num">4</span> Options</h2>
+    <label class="ligne" style="margin-top:0"><input type="checkbox" id="rs-prog"> Programmer pour plus tard</label>
+    <div class="sous" id="rs-prog-box" hidden>
+      <label for="rs-quand" style="margin-top:0">Date et heure</label>
+      <input type="datetime-local" id="rs-quand">
+    </div>
+    <label class="ligne"><input type="checkbox" id="rs-sponso"> Sponsoriser cette publication</label>
+    <div class="sous" id="rs-sponso-box" hidden>
+      <label for="rs-budget" style="margin-top:0">Budget total (FCFA)</label>
+      <input type="number" id="rs-budget" min="1000" step="500" value="5000" inputmode="numeric">
+      <p class="aide">Le budget est enregistré avec la publication. La campagne payante sera lancée quand la pub Meta sera activée.</p>
+    </div>
+  </section>
+
+  <section class="carte">
+    <h2>Aperçu Facebook</h2>
+    <div class="apercu">
+      <div class="tete"><div class="avatar" id="ap-avatar">F</div>
+        <div><div class="nom" id="ap-nom">Votre Page</div><div class="quand" id="ap-quand">À l'instant · 🌍</div></div></div>
+      <div class="corps vide" id="ap-texte">Votre annonce apparaîtra ici.</div>
+      <img id="ap-image" alt="" hidden>
+    </div>
+  </section>
 </main>
 
+<div class="barre"><div class="in">
+  <button class="btn" id="rs-publier" type="button">Publier maintenant</button>
+  <div class="msg" id="rs-msg" role="status" aria-live="polite"></div>
+</div></div>
+
 <script>
-  // ====== À REMPLIR UNE SEULE FOIS ======
-  // Copiez la valeur de FRIBOUK_KEY depuis votre script.js (la clé publique « anon / publishable »).
   const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
   const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
-  // =======================================
-
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const FUNCTIONS = SUPABASE_URL + "/functions/v1";
+  const AVERT = "ℹ️ Complément traditionnel, ne remplace pas un avis médical.";
   const $ = (id) => document.getElementById(id);
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  const msg = (t, ok = true) => { const m = $("rs-msg"); m.textContent = t; m.className = "msg " + (ok ? "ok" : "ko"); };
+  let produits = [], comptes = [];
+
+  const msg = (t, ok = true, lien) => {
+    const m = $("rs-msg"); m.className = "msg " + (ok ? "ok" : "ko"); m.textContent = t + " ";
+    if (lien) { const a = document.createElement("a"); a.href = lien; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir sur Facebook"; m.appendChild(a); }
+  };
   const token = async () => (await db.auth.getSession()).data.session?.access_token;
 
-  async function chargerComptes() {
-    const { data } = await db.from("social_accounts").select("*").order("created_at", { ascending: false });
-    const liste = $("rs-comptes"), sel = $("rs-compte");
-    liste.innerHTML = ""; sel.innerHTML = "";
-    if (!data || !data.length) { liste.innerHTML = '<p class="vide">Aucune page connectée pour le moment.</p>'; return; }
-    data.forEach((c) => {
-      const ligne = document.createElement("div"); ligne.className = "compte";
-      ligne.innerHTML = `<span>${esc(c.name)} <small>(${esc(c.shop)})</small></span>`;
-      const b = document.createElement("button"); b.className = "second"; b.textContent = "Déconnecter";
-      b.onclick = async () => { await db.from("social_accounts").delete().eq("id", c.id); chargerComptes(); };
-      ligne.appendChild(b); liste.appendChild(ligne);
-      const o = document.createElement("option"); o.value = c.id; o.textContent = `${c.name} — ${c.shop}`; sel.appendChild(o);
-    });
+  /* ---------- Aperçu en direct ---------- */
+  function majApercu() {
+    const t = $("rs-texte").value;
+    $("rs-nb").textContent = t.length;
+    const corps = $("ap-texte");
+    corps.textContent = t.trim() ? t : "Votre annonce apparaîtra ici.";
+    corps.className = "corps" + (t.trim() ? "" : " vide");
+    const sel = $("rs-compte"), nom = sel.options[sel.selectedIndex]?.dataset.nom || "Votre Page";
+    $("ap-nom").textContent = nom; $("ap-avatar").textContent = nom.trim().charAt(0).toUpperCase() || "F";
+    const img = $("ap-image"), url = $("rs-image").value.trim();
+    if (/^https:\/\//i.test(url)) { img.src = url; img.hidden = false; img.onerror = () => { img.hidden = true; }; } else { img.hidden = true; }
+    const prog = $("rs-prog").checked && $("rs-quand").value;
+    $("ap-quand").textContent = prog ? "Programmé · " + new Date($("rs-quand").value).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "À l'instant · 🌍";
+    $("rs-publier").textContent = prog ? "Programmer la publication" : "Publier maintenant";
   }
 
+  /* ---------- Comptes Facebook ---------- */
+  async function chargerComptes() {
+    const { data, error } = await db.from("social_accounts").select("*").order("created_at", { ascending: false });
+    comptes = error ? [] : (data || []);
+    const liste = $("rs-comptes"), sel = $("rs-compte");
+    liste.textContent = ""; sel.textContent = "";
+    if (!comptes.length) {
+      const p = document.createElement("p"); p.className = "vide"; p.textContent = "Aucune page connectée pour le moment. Touchez « + Facebook ».";
+      liste.appendChild(p);
+      const o = document.createElement("option"); o.value = ""; o.textContent = "Connectez d'abord une page"; sel.appendChild(o);
+    }
+    comptes.forEach((c) => {
+      const ligne = document.createElement("div"); ligne.className = "chip";
+      const g = document.createElement("div");
+      const b = document.createElement("b"); const pt = document.createElement("span"); pt.className = "point";
+      b.appendChild(pt); b.appendChild(document.createTextNode(c.name || "Page Facebook"));
+      const s = document.createElement("small"); s.textContent = "Facebook · " + (c.shop || "boutique");
+      g.appendChild(b); g.appendChild(s);
+      const x = document.createElement("button"); x.type = "button"; x.textContent = "Déconnecter";
+      x.onclick = async () => { if (!confirm("Déconnecter " + (c.name || "cette page") + " ?")) return;
+        await db.from("social_accounts").delete().eq("id", c.id); chargerComptes(); };
+      ligne.appendChild(g); ligne.appendChild(x); liste.appendChild(ligne);
+      const o = document.createElement("option"); o.value = c.id; o.dataset.nom = c.name || ""; o.textContent = c.name + " — " + (c.shop || ""); sel.appendChild(o);
+    });
+    majApercu();
+  }
+
+  /* ---------- Produits FRIBOUK ---------- */
+  async function chargerProduits() {
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) return;
+    const { data } = await db.from("produits").select("id, nom, description, prix, photo_url, boutiques(nom, whatsapp)")
+      .eq("proprietaire", user.id).order("created_at", { ascending: false }).limit(100);
+    produits = data || [];
+    const sel = $("rs-produit");
+    produits.forEach((p) => { const o = document.createElement("option"); o.value = p.id;
+      o.textContent = p.nom + " — " + Number(p.prix).toLocaleString("fr-FR") + " FCFA"; sel.appendChild(o); });
+  }
+  function texteProduit(p) {
+    const num = String((p.boutiques && p.boutiques.whatsapp) || "").replace(/\D/g, "");
+    let t = "🌿 " + p.nom + "\n\n";
+    if (p.description) t += p.description + "\n\n";
+    t += "💰 Prix : " + Number(p.prix).toLocaleString("fr-FR") + " FCFA\n🚚 Livraison possible\n";
+    if (num) t += "\n📲 Commandez sur WhatsApp : https://wa.me/" + num + "?text=" + encodeURIComponent("Bonjour, je suis intéressé(e) par : " + p.nom) + "\n";
+    if ($("rs-avert").checked) t += "\n" + AVERT;
+    return t;
+  }
+  $("rs-produit").onchange = () => {
+    const p = produits.find((x) => x.id === $("rs-produit").value);
+    if (!p) return;
+    $("rs-texte").value = texteProduit(p);
+    $("rs-image").value = p.photo_url || "";
+    majApercu();
+  };
+  $("rs-avert").onchange = () => {
+    const ta = $("rs-texte");
+    if ($("rs-avert").checked) { if (!ta.value.includes(AVERT)) ta.value = ta.value.replace(/\s+$/, "") + (ta.value.trim() ? "\n\n" : "") + AVERT; }
+    else ta.value = ta.value.replace(AVERT, "").replace(/\s+$/, "");
+    majApercu();
+  };
+
+  /* ---------- Connexion Facebook ---------- */
   $("rs-fb").onclick = async () => {
     const t = await token();
-    if (!t) return msg("Connectez-vous d'abord à FRIBOUK (page d'accueil), puis revenez ici.", false);
-    const r = await fetch(`${FUNCTIONS}/facebook-oauth?action=start&shop=${$("rs-shop").value}`,
-      { headers: { Authorization: "Bearer " + t } });
-    const j = await r.json();
-    if (j.url) location.href = j.url; else msg("Connexion impossible. Réessayez.", false);
+    if (!t) { $("alerte").hidden = false; return msg("Connectez-vous d'abord à FRIBOUK.", false); }
+    $("rs-fb").disabled = true; msg("Ouverture de Facebook…");
+    try {
+      const r = await fetch(`${FUNCTIONS}/facebook-oauth?action=start&shop=${$("rs-shop").value}`, { headers: { Authorization: "Bearer " + t } });
+      const j = await r.json();
+      if (j.url) location.href = j.url; else msg("Connexion impossible. Réessayez.", false);
+    } catch (e) { msg("Problème de réseau. Réessayez.", false); }
+    $("rs-fb").disabled = false;
   };
 
-  $("rs-sponso").onchange = (e) => $("rs-sponso-box").classList.toggle("actif", e.target.checked);
+  /* ---------- Options ---------- */
+  $("rs-prog").onchange = () => { $("rs-prog-box").hidden = !$("rs-prog").checked; majApercu(); };
+  $("rs-sponso").onchange = () => { $("rs-sponso-box").hidden = !$("rs-sponso").checked; };
+  ["rs-texte", "rs-image", "rs-compte", "rs-quand"].forEach((id) => { $(id).addEventListener("input", majApercu); $(id).addEventListener("change", majApercu); });
+  { const d = new Date(Date.now() - new Date().getTimezoneOffset() * 60000); $("rs-quand").min = d.toISOString().slice(0, 16); }
 
+  /* ---------- Publication ---------- */
   $("rs-publier").onclick = async () => {
     const compte = $("rs-compte").value, texte = $("rs-texte").value.trim();
+    const prog = $("rs-prog").checked, quand = $("rs-quand").value, sponso = $("rs-sponso").checked, image = $("rs-image").value.trim();
     if (!compte) return msg("Connectez d'abord une page Facebook.", false);
     if (!texte) return msg("Écrivez le texte de l'annonce.", false);
-    const user = (await db.auth.getUser()).data.user;
-    if (!user) return msg("Connectez-vous d'abord à FRIBOUK.", false);
-    const quand = $("rs-quand").value;
-    const sponso = $("rs-sponso").checked;
+    if (image && !/^https:\/\//i.test(image)) return msg("L'adresse de la photo doit commencer par https://", false);
+    if (prog && (!quand || new Date(quand) <= new Date())) return msg("Choisissez une date et une heure à venir.", false);
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) { $("alerte").hidden = false; return msg("Connectez-vous d'abord à FRIBOUK.", false); }
 
+    const btn = $("rs-publier"); btn.disabled = true; msg("Enregistrement…");
     const { data: post, error } = await db.from("social_posts").insert({
-      user_id: user.id, account_id: compte, message: texte,
-      image_url: $("rs-image").value || null,
-      scheduled_at: quand ? new Date(quand).toISOString() : null,
+      user_id: user.id, account_id: compte, message: texte, image_url: image || null,
+      scheduled_at: prog ? new Date(quand).toISOString() : null,
       sponsored: sponso, budget_xof: sponso ? Number($("rs-budget").value) : null,
-      status: quand ? "scheduled" : "draft",
+      status: prog ? "scheduled" : "draft",
     }).select().single();
-    if (error) return msg("Enregistrement impossible : " + error.message, false);
+    if (error) { btn.disabled = false; return msg("Enregistrement impossible : " + error.message, false); }
+    if (prog) { btn.disabled = false; return msg("Publication programmée."); }
 
-    if (quand) return msg("Publication programmée.");
-    msg("Publication en cours…");
-    const r = await fetch(`${FUNCTIONS}/publish-post`, {
-      method: "POST",
-      headers: { Authorization: "Bearer " + (await token()), "Content-Type": "application/json" },
-      body: JSON.stringify({ post_id: post.id }),
-    });
-    const j = await r.json();
-    j.ok ? msg("Publié sur Facebook.") : msg(j.error || "Échec de la publication.", false);
+    msg("Publication sur Facebook…");
+    try {
+      const r = await fetch(`${FUNCTIONS}/publish-post`, { method: "POST",
+        headers: { Authorization: "Bearer " + (await token()), "Content-Type": "application/json" },
+        body: JSON.stringify({ post_id: post.id }) });
+      const j = await r.json();
+      if (j.ok) msg("Publié !", true, j.id ? "https://www.facebook.com/" + j.id : null);
+      else msg(j.error || "Échec de la publication.", false);
+    } catch (e) { msg("Problème de réseau. Vérifiez votre connexion.", false); }
+    btn.disabled = false;
   };
 
-  const q = new URLSearchParams(location.search).get("social");
-  if (q === "facebook_ok") msg("Page Facebook connectée.");
-  if (q === "erreur") msg("La connexion Facebook a échoué.", false);
-  if (q === "annule") msg("Connexion annulée.", false);
-
-  chargerComptes();
+  /* ---------- Démarrage ---------- */
+  (async () => {
+    const q = new URLSearchParams(location.search).get("social");
+    if (q === "facebook_ok") msg("Page Facebook connectée.");
+    if (q === "erreur") msg("La connexion Facebook a échoué.", false);
+    if (q === "annule") msg("Connexion annulée.", false);
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) $("alerte").hidden = false;
+    await chargerComptes();
+    chargerProduits();
+    majApercu();
+  })();
 </script>
 </body>
-  </html>
-  
+</html>
