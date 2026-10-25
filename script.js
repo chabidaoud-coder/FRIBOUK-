@@ -427,6 +427,12 @@ async function chargerMesProduits() {
 }
 
 /* ---------- BARKA : catalogue public ---------- */
+function lienWhatsApp(p) {
+  const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
+  if (!num) return document.createTextNode("");
+  const texte = "Bonjour, je suis intéressé(e) par : " + p.nom + " (" + fcfa(p.prix) + "). Est-il disponible ?";
+  return h("a", { class: "bouton bouton-petit bouton-contour", href: "https://wa.me/" + num + "?text=" + encodeURIComponent(texte), target: "_blank", rel: "noopener" }, "💬 Commander sur WhatsApp");
+    }
 async function chargerCatalogue() {
   // remplir le filtre boutiques (une seule fois)
   const filtre = $("#filtre-boutique");
@@ -439,7 +445,7 @@ async function chargerCatalogue() {
   vider(zone);
   zone.append(h("p", { class: "vide" }, "Chargement…"));
 
-  let requete = sb.from("produits").select("id, nom, description, prix, photo_url, stock, boutique_id, boutiques(nom)").eq("statut", "publie").order("created_at", { ascending: false }).limit(60);
+  let requete = sb.from("produits").select("id, nom, description, prix, photo_url, stock, boutique_id, boutiques(nom,whatsapp)").eq("statut", "publie").order("created_at", { ascending: false }).limit(60);
   const mot = $("#recherche-produit").value.trim().replace(/[%,]/g, " ");
   if (mot) requete = requete.ilike("nom", "%" + mot + "%");
   if (filtre.value) requete = requete.eq("boutique_id", filtre.value);
@@ -458,7 +464,8 @@ async function chargerCatalogue() {
         h("span", { class: "boutique" }, p.boutiques ? p.boutiques.nom : ""),
         p.stock > 0
           ? h("button", { class: "bouton bouton-or", type: "button", onclick: () => ajouterAuPanier(p) }, "Ajouter au panier")
-          : h("span", { class: "boutique" }, "Épuisé"))));
+                 : h("span", { class: "boutique" }, "Épuisé"),
+        lienWhatsApp(p))));
   });
 }
 $("#lancer-recherche").addEventListener("click", chargerCatalogue);
