@@ -333,7 +333,12 @@ async function chargerBoutiquesVendeur() {
   mesBoutiques.forEach((b) => sel.append(h("option", { value: b.id }, b.nom)));
   chargerMesProduits();
 }
-
+function normaliserWhatsApp(v) {
+  let n = String(v || "").replace(/\D/g, "");
+  if (n.startsWith("00")) n = n.slice(2);
+  if (n.length === 8 || (n.length === 10 && n.startsWith("01"))) n = "229" + n;
+  return n || null;
+                                                                         }
 $("#ouvrir-boutique").addEventListener("click", () => { const f = $("#formulaire-boutique"); f.hidden = !f.hidden; });
 
 $("#enregistrer-boutique").addEventListener("click", async () => {
@@ -345,12 +350,14 @@ $("#enregistrer-boutique").addEventListener("click", async () => {
     proprietaire: utilisateur.id, nom,
     description: $("#description-boutique").value.trim(),
     categorie: $("#categorie-boutique").value.trim(),
-    localisation: $("#localisation-boutique").value.trim()
+    localisation: $("#localisation-boutique").value.trim(),
+        localisation: $("#localisation-boutique").value.trim(),
+    whatsapp: normaliserWhatsApp($("#whatsapp-boutique").value)
   });
   occupe(bouton, false);
   if (error) { dire("#message-boutique", "Erreur : " + error.message, true); return; }
   dire("#message-boutique", "Boutique « " + nom + " » enregistrée !");
-  ["#nom-boutique", "#description-boutique", "#categorie-boutique", "#localisation-boutique"].forEach((s) => { $(s).value = ""; });
+    ["#nom-boutique", "#description-boutique", "#categorie-boutique", "#localisation-boutique", "#whatsapp-boutique"].forEach((s) => { $(s).value = ""; });
   chargerBoutiquesVendeur();
 });
 
