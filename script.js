@@ -445,7 +445,7 @@ function suivre(type, boutiqueId, produitId) {
   window.__vus = window.__vus || new Set();
   const cle = type + ":" + boutiqueId + ":" + (produitId || "");
   if (type.indexOf("vue_") === 0) { if (window.__vus.has(cle)) return; window.__vus.add(cle); }
-    sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null, visiteur: idVisiteur(), utilisateur: utilisateur ? utilisateur.id : null }).then(function () {}, function () {});
+  sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null, visiteur: idVisiteur(), utilisateur: utilisateur ? utilisateur.id : null }).then(function () {}, function () {});
 }
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
   if (!num) return document.createTextNode("");
