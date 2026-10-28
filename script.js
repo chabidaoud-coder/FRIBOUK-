@@ -1,4 +1,4 @@
-/* FRIBOUK — script.js (v1) */
+/* FRIBOUK — script.js (v2) */
 const FRIBOUK_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
 const FRIBOUK_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
 const SITE_URL = location.origin + location.pathname; // adresse réelle de votre site
@@ -315,7 +315,7 @@ async function chargerCreations() {
 let mesBoutiques = [];
 
 async function chargerBoutiquesVendeur() {
-  const { data, error } = await sb.from("boutiques").select("id, nom, description, categorie, localisation").eq("proprietaire", utilisateur.id).order("created_at", { ascending: false });
+  const { data, error } = await sb.from("boutiques").select("id, nom, description, categorie, localisation, whatsapp").eq("proprietaire", utilisateur.id).order("created_at", { ascending: false });
   mesBoutiques = error ? [] : data;
 
   const zone = $("#mes-boutiques");
@@ -332,12 +332,14 @@ async function chargerBoutiquesVendeur() {
   mesBoutiques.forEach((b) => sel.append(h("option", { value: b.id }, b.nom)));
   chargerMesProduits();
 }
+
 function normaliserWhatsApp(v) {
   let n = String(v || "").replace(/\D/g, "");
   if (n.startsWith("00")) n = n.slice(2);
   if (n.length === 8 || (n.length === 10 && n.startsWith("01"))) n = "229" + n;
   return n || null;
-                                                                         }
+}
+
 $("#ouvrir-boutique").addEventListener("click", () => { const f = $("#formulaire-boutique"); f.hidden = !f.hidden; });
 
 $("#enregistrer-boutique").addEventListener("click", async () => {
@@ -350,13 +352,12 @@ $("#enregistrer-boutique").addEventListener("click", async () => {
     description: $("#description-boutique").value.trim(),
     categorie: $("#categorie-boutique").value.trim(),
     localisation: $("#localisation-boutique").value.trim(),
-        localisation: $("#localisation-boutique").value.trim(),
     whatsapp: normaliserWhatsApp($("#whatsapp-boutique").value)
   });
   occupe(bouton, false);
   if (error) { dire("#message-boutique", "Erreur : " + error.message, true); return; }
   dire("#message-boutique", "Boutique « " + nom + " » enregistrée !");
-    ["#nom-boutique", "#description-boutique", "#categorie-boutique", "#localisation-boutique", "#whatsapp-boutique"].forEach((s) => { $(s).value = ""; });
+  ["#nom-boutique", "#description-boutique", "#categorie-boutique", "#localisation-boutique", "#whatsapp-boutique"].forEach((s) => { $(s).value = ""; });
   chargerBoutiquesVendeur();
 });
 
@@ -432,26 +433,48 @@ async function chargerMesProduits() {
   });
 }
 
-/* ---------- BARKA : catalogue public ---------- */
+/* ---------- Suivi des vues, contacts et paniers ---------- */
 function idVisiteur() {
   try {
     let v = localStorage.getItem("fribouk_vid");
-    if (!v) { v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2); localStorage.setItem("fribouk_vid", v); }
+    if (!v) {
+      v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+      localStorage.setItem("fribouk_vid", v);
+    }
     return v;
   } catch (e) { return "anonyme"; }
 }
+
 function suivre(type, boutiqueId, produitId) {
   if (!boutiqueId) return;
   window.__vus = window.__vus || new Set();
   const cle = type + ":" + boutiqueId + ":" + (produitId || "");
-  if (type.indexOf("vue_") === 0) { if (window.__vus.has(cle)) return; window.__vus.add(cle); }
-  sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null, visiteur: idVisiteur(), utilisateur: utilisateur ? utilisateur.id : null }).then(function () {}, function () {});
+  if (type.indexOf("vue_") === 0) {
+    if (window.__vus.has(cle)) return;
+    window.__vus.add(cle);
+  }
+  sb.from("evenements").insert({
+    type: type,
+    boutique_id: String(boutiqueId),
+    produit_id: produitId ? String(produitId) : null,
+    visiteur: idVisiteur(),
+    utilisateur: utilisateur ? utilisateur.id : null
+  }).then(function () {}, function () {});
 }
+
+/* ---------- BARKA : catalogue public ---------- */
+function lienWhatsApp(p) {
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
   if (!num) return document.createTextNode("");
   const texte = "Bonjour, je suis intéressé(e) par : " + p.nom + " (" + fcfa(p.prix) + "). Est-il disponible ?";
-  return h("a", { class: "bouton bouton-petit bouton-contour", href: "https://wa.me/" + num + "?text=" + encodeURIComponent(texte), target: "_blank", rel: "noopener", onclick: () => suivre("clic_whatsapp", p.boutique_id, p.id) }, "💬 Commander sur WhatsApp");
-    }
+  return h("a", {
+    class: "bouton bouton-petit bouton-contour",
+    href: "https://wa.me/" + num + "?text=" + encodeURIComponent(texte),
+    target: "_blank", rel: "noopener",
+    onclick: () => suivre("clic_whatsapp", p.boutique_id, p.id)
+  }, "💬 Commander sur WhatsApp");
+}
+
 async function chargerCatalogue() {
   // remplir le filtre boutiques (une seule fois)
   const filtre = $("#filtre-boutique");
@@ -464,7 +487,7 @@ async function chargerCatalogue() {
   vider(zone);
   zone.append(h("p", { class: "vide" }, "Chargement…"));
 
-  let requete = sb.from("produits").select("id, nom, description, prix, photo_url, stock, boutique_id, boutiques(nom,whatsapp)").eq("statut", "publie").order("created_at", { ascending: false }).limit(60);
+  let requete = sb.from("produits").select("id, nom, description, prix, photo_url, stock, boutique_id, boutiques(nom, whatsapp)").eq("statut", "publie").order("created_at", { ascending: false }).limit(60);
   const mot = $("#recherche-produit").value.trim().replace(/[%,]/g, " ");
   if (mot) requete = requete.ilike("nom", "%" + mot + "%");
   if (filtre.value) requete = requete.eq("boutique_id", filtre.value);
@@ -475,6 +498,7 @@ async function chargerCatalogue() {
   if (!data.length) { zone.append(h("p", { class: "vide" }, "Aucun produit trouvé.")); return; }
 
   data.forEach((p) => {
+    suivre("vue_produit", p.boutique_id, p.id);
     const image = p.photo_url ? h("img", { src: p.photo_url, alt: p.nom, loading: "lazy" }) : h("div", { class: "sans-photo" }, "📦");
     zone.append(h("div", { class: "produit" }, image,
       h("div", { class: "corps" },
@@ -483,14 +507,17 @@ async function chargerCatalogue() {
         h("a", { class: "boutique", href: "avis.html?b=" + p.boutique_id }, (p.boutiques ? p.boutiques.nom : "") + " · ⭐ Avis"),
         p.stock > 0
           ? h("button", { class: "bouton bouton-or", type: "button", onclick: () => ajouterAuPanier(p) }, "Ajouter au panier")
-                 : h("span", { class: "boutique" }, "Épuisé"),
+          : h("span", { class: "boutique" }, "Épuisé"),
         lienWhatsApp(p))));
   });
 }
-$("#filtre-boutique").addEventListener("change", () => { if ($("#filtre-boutique").value) suivre("vue_boutique", $("#filtre-boutique").value); chargerCatalogue(); });
-$("
-  $("#lancer-recherche").addEventListener("click", chargerCatalogue);
-#recherche-produit").addEventListener("keydown", (e) => { if (e.key === "Enter") chargerCatalogue(); });
+
+$("#lancer-recherche").addEventListener("click", chargerCatalogue);
+$("#recherche-produit").addEventListener("keydown", (e) => { if (e.key === "Enter") chargerCatalogue(); });
+$("#filtre-boutique").addEventListener("change", () => {
+  if ($("#filtre-boutique").value) suivre("vue_boutique", $("#filtre-boutique").value);
+  chargerCatalogue();
+});
 
 /* ---------- Panier et commandes ---------- */
 function sauverPanier() {
@@ -502,7 +529,7 @@ function ajouterAuPanier(p) {
   const ligne = panier[p.id] || { id: p.id, nom: p.nom, prix: p.prix, qte: 0 };
   if (ligne.qte >= p.stock) { toast("Stock maximum atteint.", true); return; }
   ligne.qte += 1;
-    suivre("ajout_panier", p.boutique_id, p.id);
+  suivre("ajout_panier", p.boutique_id, p.id);
   panier[p.id] = ligne;
   sauverPanier();
   toast(p.nom + " ajouté au panier.");
@@ -615,3 +642,4 @@ $("#hg-envoyer").addEventListener("click", async () => {
 sauverPanier();
 majEntete();
 ouvrirVue("accueil");
+  
