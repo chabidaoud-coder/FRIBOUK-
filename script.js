@@ -452,7 +452,7 @@ function lienWhatsApp(p) {
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
   if (!num) return document.createTextNode("");
   const texte = "Bonjour, je suis intéressé(e) par : " + p.nom + " (" + fcfa(p.prix) + "). Est-il disponible ?";
-  return h("a", { class: "bouton bouton-petit bouton-contour", href: "https://wa.me/" + num + "?text=" + encodeURIComponent(texte), target: "_blank", rel: "noopener" }, "💬 Commander sur WhatsApp");
+  return h("a", { class: "bouton bouton-petit bouton-contour", href: "https://wa.me/" + num + "?text=" + encodeURIComponent(texte), target: "_blank", rel: "noopener", onclick: () => suivre("clic_whatsapp", p.boutique_id, p.id) }, "💬 Commander sur WhatsApp");
     }
 async function chargerCatalogue() {
   // remplir le filtre boutiques (une seule fois)
@@ -489,7 +489,7 @@ async function chargerCatalogue() {
         lienWhatsApp(p))));
   });
 }
-$("#lancer-recherche").addEventListener("click", chargerCatalogue);
+$("#filtre-boutique").addEventListener("change", () => { if ($("#filtre-boutique").value) suivre("vue_boutique", $("#filtre-boutique").value); chargerCatalogue(); });
 $("#recherche-produit").addEventListener("keydown", (e) => { if (e.key === "Enter") chargerCatalogue(); });
 $("#filtre-boutique").addEventListener("change", chargerCatalogue);
 
@@ -503,6 +503,7 @@ function ajouterAuPanier(p) {
   const ligne = panier[p.id] || { id: p.id, nom: p.nom, prix: p.prix, qte: 0 };
   if (ligne.qte >= p.stock) { toast("Stock maximum atteint.", true); return; }
   ligne.qte += 1;
+    suivre("ajout_panier", p.boutique_id, p.id);
   panier[p.id] = ligne;
   sauverPanier();
   toast(p.nom + " ajouté au panier.");
