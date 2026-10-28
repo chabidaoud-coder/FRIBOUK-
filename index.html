@@ -343,7 +343,7 @@
   <p>© FRIBOUK — Tous droits réservés</p>
 </footer>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-
+<script>window.addEventListener("error", function (e) { alert("Erreur : " + e.message + " (ligne " + e.lineno + ")"); });</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js" defer></script>
 </body>
