@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Avis sur la boutique</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root { --fond:#0b2620; --carte:#12372f; --carte2:#0f2f28; --bord:#25544a; --texte:#eef5f2; --doux:#a9c2ba;
+          --or:#e8b64a; --vert:#2a9d78; --rouge:#ff8a7a; }
+  * { box-sizing:border-box; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px; line-height:1.45; padding-bottom:40px; }
+  .haut { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px; padding:12px 16px;
+          background:rgba(11,38,32,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--bord); }
+  .haut a { color:var(--or); text-decoration:none; font-weight:700; font-size:1.3rem; line-height:1; padding:6px 10px 6px 0; }
+  .haut h1 { font-size:1.1rem; margin:0; }
+  main { max-width:620px; margin:0 auto; padding:16px; }
+  .carte { background:var(--carte); border:1px solid var(--bord); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .carte h2 { font-size:1rem; margin:0 0 12px; }
+  .resume { display:flex; align-items:center; gap:16px; }
+  .resume .gros { font-size:2.6rem; font-weight:800; line-height:1; }
+  .etoiles { color:var(--or); letter-spacing:2px; font-size:1.1rem; }
+  .doux, .note, .vide { color:var(--doux); font-size:.88rem; }
+  .avis { background:var(--carte2); border:1px solid var(--bord); border-radius:12px; padding:12px; margin-top:10px; }
+  .avis:first-of-type { margin-top:0; }
+  .avis .tete { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+  .avis p { margin:6px 0 0; white-space:pre-wrap; word-break:break-word; }
+  .badge { display:inline-block; font-size:.72rem; font-weight:700; padding:3px 8px; border-radius:99px; background:#1c5a45; color:#9ff0cf; margin-top:8px; }
+  .badge.c { background:#4a3a10; color:#ffd77a; }
+  label { display:block; font-size:.85rem; color:var(--doux); margin:12px 0 6px; font-weight:600; }
+  input[type=text], textarea { width:100%; padding:12px; background:var(--carte2); color:var(--texte); border:1px solid var(--bord);
+          border-radius:12px; font:inherit; font-size:1rem; }
+  textarea { min-height:110px; resize:vertical; }
+  .choix { display:flex; gap:6px; }
+  .choix button { flex:1; font:inherit; font-size:1.5rem; padding:8px 0; background:var(--carte2); color:var(--doux);
+          border:1px solid var(--bord); border-radius:12px; cursor:pointer; }
+  .choix button[aria-pressed="true"] { background:var(--or); color:#1c1604; border-color:var(--or); }
+  .btn { width:100%; margin-top:14px; font:inherit; font-weight:700; font-size:1rem; border:0; border-radius:12px; padding:14px;
+         background:var(--or); color:#1c1604; cursor:pointer; }
+  .btn:disabled { opacity:.55; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline:3px solid var(--or); outline-offset:2px; }
+  .msg { min-height:1.2em; margin-top:10px; font-size:.92rem; }
+  .msg.ok { color:#7be0b8; } .msg.ko { color:var(--rouge); }
+  .info { background:var(--carte2); border:1px dashed var(--bord); border-radius:12px; padding:12px; font-size:.92rem; color:var(--doux); }
+  .info a { color:var(--or); font-weight:700; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header class="haut"><a href="index.html" aria-label="Retour à FRIBOUK">←</a><h1 id="titre">Avis sur la boutique</h1></header>
+
+<main>
+  <div class="carte">
+    <div class="resume">
+      <div class="gros" id="moyenne">–</div>
+      <div><div class="etoiles" id="etoiles">☆☆☆☆☆</div><div class="doux" id="nb">Aucun avis pour le moment</div></div>
+    </div>
+  </div>
+
+  <div class="carte" id="bloc-form" hidden>
+    <h2>Donner votre avis</h2>
+    <div class="info" id="etat-avis" hidden></div>
+    <div id="form">
+      <label for="a-nom">Votre prénom (affiché publiquement)</label>
+      <input type="text" id="a-nom" maxlength="30" autocomplete="given-name">
+      <label>Votre note</label>
+      <div class="choix" id="a-notes" role="group" aria-label="Note de 1 à 5">
+        <button type="button" data-n="1" aria-pressed="false" aria-label="1 étoile">★</button>
+        <button type="button" data-n="2" aria-pressed="false" aria-label="2 étoiles">★</button>
+        <button type="button" data-n="3" aria-pressed="false" aria-label="3 étoiles">★</button>
+        <button type="button" data-n="4" aria-pressed="false" aria-label="4 étoiles">★</button>
+        <button type="button" data-n="5" aria-pressed="false" aria-label="5 étoiles">★</button>
+      </div>
+      <label for="a-texte">Votre commentaire</label>
+      <textarea id="a-texte" maxlength="600" placeholder="Racontez votre expérience : accueil, qualité, livraison…"></textarea>
+      <p class="note">Votre avis sera relu par l'administration avant d'être publié. Restez respectueux et ne mettez ni numéro de téléphone ni lien.</p>
+      <button class="btn" id="a-envoyer" type="button">Envoyer mon avis</button>
+      <div class="msg" id="a-msg" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="info" id="info-acces" hidden></div>
+
+  <div class="carte"><h2>Avis des clients</h2><div id="liste"></div></div>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const boutique = new URLSearchParams(location.search).get("b");
+  let note = 0;
+
+  function el(tag, cls, texte) { const e = document.createElement(tag); if (cls) e.className = cls; if (texte != null) e.textContent = texte; return e; }
+  const etoiles = (n) => "★".repeat(n) + "☆".repeat(5 - n);
+  function msg(t, ok) { const m = $("a-msg"); m.textContent = t; m.className = "msg " + (ok ? "ok" : "ko"); }
+
+  async function chargerBoutique() {
+    const { data } = await db.from("boutiques").select("nom").eq("id", boutique).maybeSingle();
+    if (data && data.nom) { $("titre").textContent = "Avis : " + data.nom; document.title = "Avis – " + data.nom; }
+  }
+
+  async function chargerAvis() {
+    const { data: r } = await db.from("avis_resume").select("moyenne, nb").eq("boutique_id", boutique).maybeSingle();
+    if (r && r.nb > 0) {
+      $("moyenne").textContent = String(r.moyenne).replace(".", ",");
+      $("etoiles").textContent = etoiles(Math.round(Number(r.moyenne)));
+      $("nb").textContent = r.nb + " avis";
+    }
+    const zone = $("liste"); zone.textContent = "";
+    const { data, error } = await db.from("avis_publics").select("note, commentaire, auteur_nom, preuve, created_at")
+      .eq("boutique_id", boutique).order("created_at", { ascending: false }).limit(50);
+    if (error) { zone.appendChild(el("p", "vide", "Impossible de charger les avis.")); return; }
+    if (!data.length) { zone.appendChild(el("p", "vide", "Aucun avis publié pour le moment.")); return; }
+    data.forEach((a) => {
+      const c = el("div", "avis"), t = el("div", "tete");
+      const g = el("b", null, a.auteur_nom); t.appendChild(g);
+      t.appendChild(el("span", "doux", new Date(a.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })));
+      c.appendChild(t); c.appendChild(el("div", "etoiles", etoiles(a.note))); c.appendChild(el("p", null, a.commentaire));
+      c.appendChild(el("span", "badge" + (a.preuve === "contact" ? " c" : ""), a.preuve === "achat" ? "✔ Client ayant acheté" : "✔ A contacté la boutique"));
+      zone.appendChild(c);
+    });
+  }
+
+  async function preparerFormulaire() {
+    const info = $("info-acces");
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) {
+      info.hidden = false; info.textContent = "";
+      info.append("Pour donner votre avis, ", Object.assign(el("a", null, "connectez-vous à FRIBOUK"), { href: "index.html" }), " (Mon compte). Seuls les clients ayant acheté ou contacté cette boutique peuvent commenter.");
+      return;
+    }
+    const { data: droit } = await db.rpc("droit_avis", { p_boutique: boutique });
+    if (!droit) {
+      info.hidden = false;
+      info.textContent = "Les avis sont réservés aux clients qui ont acheté dans cette boutique ou qui l'ont contactée via « Commander sur WhatsApp » depuis BARKA (en étant connectés).";
+      return;
+    }
+    $("bloc-form").hidden = false;
+    const { data: mon } = await db.rpc("mon_avis", { p_boutique: boutique });
+    if (mon) {
+      $("a-nom").value = mon.auteur_nom; $("a-texte").value = mon.commentaire; choisir(mon.note);
+      const e = $("etat-avis"); e.hidden = false;
+      e.textContent = mon.statut === "publie" ? "Votre avis est publié. Vous pouvez le modifier ci-dessous (il sera relu de nouveau)."
+        : mon.statut === "masque" ? "Votre avis n'a pas été retenu par l'administration. Vous pouvez le modifier et le renvoyer."
+        : "Votre avis est en attente de validation. Vous pouvez encore le modifier.";
+    }
+  }
+
+  function choisir(n) { note = n; document.querySelectorAll("#a-notes button").forEach((b) => b.setAttribute("aria-pressed", Number(b.dataset.n) <= n)); }
+  $("a-notes").addEventListener("click", (e) => { const b = e.target.closest("button[data-n]"); if (b) choisir(Number(b.dataset.n)); });
+
+  $("a-envoyer").onclick = async () => {
+    if (!note) return msg("Choisissez une note.", false);
+    const btn = $("a-envoyer"); btn.disabled = true; msg("Envoi…", true);
+    const { data, error } = await db.rpc("donner_avis", { p_boutique: boutique, p_nom: $("a-nom").value, p_note: note, p_commentaire: $("a-texte").value });
+    btn.disabled = false;
+    if (error) return msg(error.message, false);
+    msg(data === "publie" ? "Merci ! Votre avis est publié." : "Merci ! Votre avis sera publié après validation par l'administration.", true);
+    chargerAvis();
+  };
+
+  (async () => {
+    if (!boutique) { $("liste").textContent = "Boutique introuvable. Ouvrez cette page depuis BARKA."; return; }
+    chargerBoutique(); chargerAvis(); preparerFormulaire();
+  })();
+</script>
+</body>
+</html>
