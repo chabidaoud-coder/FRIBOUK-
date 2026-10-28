@@ -446,7 +446,7 @@ function suivre(type, boutiqueId, produitId) {
   window.__vus = window.__vus || new Set();
   const cle = type + ":" + boutiqueId + ":" + (produitId || "");
   if (type.indexOf("vue_") === 0) { if (window.__vus.has(cle)) return; window.__vus.add(cle); }
-  sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null, visiteur: idVisiteur() }).then(function () {}, function () {});
+  sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null,visiteur: idVisiteur(), utilisateur: utilisateur ? utilisateur.id : null }
 }
 function lienWhatsApp(p) {
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
@@ -482,7 +482,7 @@ async function chargerCatalogue() {
       h("div", { class: "corps" },
         h("h4", {}, p.nom),
         h("span", { class: "prix" }, fcfa(p.prix)),
-        h("span", { class: "boutique" }, p.boutiques ? p.boutiques.nom : ""),
+        h("a", { class: "boutique", href: "avis.html?b=" + p.boutique_id }, (p.boutiques ? p.boutiques.nom : "") + " · ⭐ Avis"),
         p.stock > 0
           ? h("button", { class: "bouton bouton-or", type: "button", onclick: () => ajouterAuPanier(p) }, "Ajouter au panier")
                  : h("span", { class: "boutique" }, "Épuisé"),
