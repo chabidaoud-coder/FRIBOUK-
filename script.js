@@ -446,9 +446,8 @@ function suivre(type, boutiqueId, produitId) {
   window.__vus = window.__vus || new Set();
   const cle = type + ":" + boutiqueId + ":" + (produitId || "");
   if (type.indexOf("vue_") === 0) { if (window.__vus.has(cle)) return; window.__vus.add(cle); }
-  sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null,visiteur: idVisiteur(), utilisateur: utilisateur ? utilisateur.id : null }
+    sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null, visiteur: idVisiteur(), utilisateur: utilisateur ? utilisateur.id : null }).then(function () {}, function () {});
 }
-function lienWhatsApp(p) {
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
   if (!num) return document.createTextNode("");
   const texte = "Bonjour, je suis intéressé(e) par : " + p.nom + " (" + fcfa(p.prix) + "). Est-il disponible ?";
@@ -490,8 +489,9 @@ async function chargerCatalogue() {
   });
 }
 $("#filtre-boutique").addEventListener("change", () => { if ($("#filtre-boutique").value) suivre("vue_boutique", $("#filtre-boutique").value); chargerCatalogue(); });
-$("#recherche-produit").addEventListener("keydown", (e) => { if (e.key === "Enter") chargerCatalogue(); });
-$("#filtre-boutique").addEventListener("change", chargerCatalogue);
+$("
+  $("#lancer-recherche").addEventListener("click", chargerCatalogue);
+#recherche-produit").addEventListener("keydown", (e) => { if (e.key === "Enter") chargerCatalogue(); });
 
 /* ---------- Panier et commandes ---------- */
 function sauverPanier() {
