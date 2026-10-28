@@ -1,5 +1,5 @@
 /* FRIBOUK — script.js (v1) */
-
+window.addEventListener("error", (e) => alert("Erreur : " + e.message + " (ligne " + e.lineno + ")"));
 const FRIBOUK_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
 const FRIBOUK_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
 const SITE_URL = location.origin + location.pathname; // adresse réelle de votre site
