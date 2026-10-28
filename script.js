@@ -434,6 +434,20 @@ async function chargerMesProduits() {
 }
 
 /* ---------- BARKA : catalogue public ---------- */
+function idVisiteur() {
+  try {
+    let v = localStorage.getItem("fribouk_vid");
+    if (!v) { v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2); localStorage.setItem("fribouk_vid", v); }
+    return v;
+  } catch (e) { return "anonyme"; }
+}
+function suivre(type, boutiqueId, produitId) {
+  if (!boutiqueId) return;
+  window.__vus = window.__vus || new Set();
+  const cle = type + ":" + boutiqueId + ":" + (produitId || "");
+  if (type.indexOf("vue_") === 0) { if (window.__vus.has(cle)) return; window.__vus.add(cle); }
+  sb.from("evenements").insert({ type: type, boutique_id: String(boutiqueId), produit_id: produitId ? String(produitId) : null, visiteur: idVisiteur() }).then(function () {}, function () {});
+}
 function lienWhatsApp(p) {
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
   if (!num) return document.createTextNode("");
