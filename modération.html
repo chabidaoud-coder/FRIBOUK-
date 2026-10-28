@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Modération des avis</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root { --fond:#0b2620; --carte:#12372f; --carte2:#0f2f28; --bord:#25544a; --texte:#eef5f2; --doux:#a9c2ba;
+          --or:#e8b64a; --vert:#2a9d78; --rouge:#ff8a7a; }
+  * { box-sizing:border-box; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px; line-height:1.45; padding-bottom:40px; }
+  .haut { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px; padding:12px 16px;
+          background:rgba(11,38,32,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--bord); }
+  .haut a { color:var(--or); text-decoration:none; font-weight:700; font-size:1.3rem; line-height:1; padding:6px 10px 6px 0; }
+  .haut h1 { font-size:1.1rem; margin:0; }
+  main { max-width:620px; margin:0 auto; padding:16px; }
+  .onglets { display:flex; gap:6px; margin-bottom:12px; }
+  .onglets button { flex:1; font:inherit; font-weight:600; font-size:.82rem; padding:10px 4px; border-radius:12px;
+          border:1px solid var(--bord); background:var(--carte2); color:var(--doux); cursor:pointer; }
+  .onglets button[aria-pressed="true"] { background:var(--or); color:#1c1604; border-color:var(--or); }
+  select { width:100%; padding:12px; background:var(--carte2); color:var(--texte); border:1px solid var(--bord); border-radius:12px; font:inherit; margin-bottom:12px; }
+  .avis { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:14px; margin-bottom:10px; }
+  .avis .tete { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+  .avis .etoiles { color:var(--or); letter-spacing:2px; }
+  .avis p { margin:8px 0 0; white-space:pre-wrap; word-break:break-word; }
+  .doux, .vide { color:var(--doux); font-size:.85rem; }
+  .badge { display:inline-block; font-size:.72rem; font-weight:700; padding:3px 8px; border-radius:99px; margin-right:6px; }
+  .b-ok { background:#1c5a45; color:#9ff0cf; } .b-att { background:#4a3a10; color:#ffd77a; } .b-ko { background:#5a2218; color:#ffb4a6; }
+  .b-p { background:#2b3f39; color:var(--doux); }
+  .actions { display:flex; gap:8px; margin-top:12px; }
+  .actions button { flex:1; font:inherit; font-weight:700; font-size:.9rem; padding:10px 6px; border:0; border-radius:10px; cursor:pointer; }
+  .pub { background:var(--vert); color:#fff; } .mas { background:#5a2218; color:#ffd3cb; } .att { background:var(--carte2); color:var(--doux); border:1px solid var(--bord) !important; }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline:3px solid var(--or); outline-offset:2px; }
+  .erreur { background:#3a1a14; border:1px solid var(--rouge); color:#ffd3cb; border-radius:12px; padding:12px; margin-bottom:14px; }
+  .alerte { background:#3a2a0a; border:1px solid #b98a22; color:#ffe2a0; border-radius:12px; padding:12px; margin-bottom:14px; }
+  .alerte a { color:var(--or); font-weight:700; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header class="haut"><a href="index.html" aria-label="Retour à FRIBOUK">←</a><h1>Modération des avis</h1></header>
+<main>
+  <div class="alerte" id="alerte" hidden>Connectez-vous avec votre compte administrateur : <a href="index.html">ouvrez FRIBOUK, touchez « Mon compte »</a>, puis revenez ici.</div>
+  <div class="erreur" id="erreur" hidden></div>
+
+  <div id="contenu" hidden>
+    <div class="onglets" id="onglets">
+      <button type="button" data-s="en_attente" aria-pressed="true">En attente <span id="n-en_attente"></span></button>
+      <button type="button" data-s="publie" aria-pressed="false">Publiés <span id="n-publie"></span></button>
+      <button type="button" data-s="masque" aria-pressed="false">Masqués <span id="n-masque"></span></button>
+    </div>
+    <select id="filtre" aria-label="Filtrer par boutique"><option value="">Toutes les boutiques</option></select>
+    <div id="liste"></div>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  let tous = [], statut = "en_attente";
+
+  function el(tag, cls, texte) { const e = document.createElement(tag); if (cls) e.className = cls; if (texte != null) e.textContent = texte; return e; }
+  const etoiles = (n) => "★".repeat(n) + "☆".repeat(5 - n);
+  function erreur(t) { const e = $("erreur"); e.textContent = t; e.hidden = !t; }
+
+  async function charger() {
+    erreur("");
+    const { data, error } = await db.rpc("admin_avis", { p_statut: "tous" });
+    if (error) {
+      $("contenu").hidden = true;
+      erreur(/réservé/i.test(error.message)
+        ? "Accès réservé à l'administration. Votre compte n'est pas encore enregistré comme administrateur."
+        : /admin_avis|function/i.test(error.message)
+          ? "Les avis ne sont pas encore activés : exécutez le fichier 8_avis.sql dans Supabase."
+          : "Erreur : " + error.message);
+      return;
+    }
+    tous = data || []; $("contenu").hidden = false;
+    const sel = $("filtre"), cur = sel.value; sel.length = 1;
+    const vus = new Map(); tous.forEach((a) => vus.set(a.boutique_id, a.boutique));
+    [...vus.entries()].sort((a, b) => a[1].localeCompare(b[1])).forEach(([id, nom]) => { const o = el("option", null, nom); o.value = id; sel.appendChild(o); });
+    sel.value = cur;
+    afficher();
+  }
+
+  function afficher() {
+    ["en_attente", "publie", "masque"].forEach((s) => { $("n-" + s).textContent = "(" + tous.filter((a) => a.statut === s).length + ")"; });
+    const f = $("filtre").value, zone = $("liste"); zone.textContent = "";
+    const liste = tous.filter((a) => a.statut === statut && (!f || a.boutique_id === f));
+    if (!liste.length) { zone.appendChild(el("p", "vide", "Aucun avis dans cette catégorie.")); return; }
+    liste.forEach((a) => {
+      const c = el("div", "avis"), t = el("div", "tete");
+      t.appendChild(el("b", null, a.boutique));
+      t.appendChild(el("span", "doux", new Date(a.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })));
+      c.appendChild(t);
+      const m = el("div"); m.appendChild(el("span", "etoiles", etoiles(a.note))); m.appendChild(document.createTextNode(" "));
+      m.appendChild(el("span", "doux", "par " + a.auteur_nom)); c.appendChild(m);
+      c.appendChild(el("p", null, a.commentaire));
+      const b = el("div"); b.style.marginTop = "8px";
+      b.appendChild(el("span", "badge b-p", a.preuve === "achat" ? "A acheté" : "A contacté")); c.appendChild(b);
+      const act = el("div", "actions");
+      const bouton = (cls, lib, s) => { const x = el("button", cls, lib); x.type = "button"; x.onclick = () => moderer(a.id, s, x); act.appendChild(x); };
+      if (a.statut !== "publie") bouton("pub", "✔ Publier", "publie");
+      if (a.statut !== "masque") bouton("mas", "✖ Masquer", "masque");
+      if (a.statut !== "en_attente") bouton("att", "↺ En attente", "en_attente");
+      c.appendChild(act); zone.appendChild(c);
+    });
+  }
+
+  async function moderer(id, s, bouton) {
+    bouton.disabled = true;
+    const { error } = await db.rpc("admin_moderer_avis", { p_id: id, p_statut: s });
+    if (error) { bouton.disabled = false; return erreur("Action impossible : " + error.message); }
+    const a = tous.find((x) => x.id === id); if (a) a.statut = s;
+    afficher();
+  }
+
+  $("onglets").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-s]"); if (!b) return;
+    statut = b.dataset.s;
+    document.querySelectorAll("#onglets button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    afficher();
+  });
+  $("filtre").onchange = afficher;
+
+  (async () => {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { $("alerte").hidden = false; return; }
+    charger();
+  })();
+</script>
+</body>
+                                                                                                      </html>
+                                                                                                      
