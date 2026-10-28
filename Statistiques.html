@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Mes statistiques</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root { --fond:#0b2620; --carte:#12372f; --carte2:#0f2f28; --bord:#25544a; --texte:#eef5f2; --doux:#a9c2ba;
+          --or:#e8b64a; --vert:#2a9d78; --rouge:#ff8a7a; }
+  * { box-sizing:border-box; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px; line-height:1.45; padding-bottom:40px; }
+  .haut { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px; padding:12px 16px;
+          background:rgba(11,38,32,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--bord); }
+  .haut a.ret { color:var(--or); text-decoration:none; font-weight:700; font-size:1.3rem; line-height:1; padding:6px 10px 6px 0; }
+  .haut h1 { font-size:1.1rem; margin:0; flex:1; }
+  .haut a.lien { color:var(--or); font-size:.85rem; font-weight:700; text-decoration:none; }
+  main { max-width:620px; margin:0 auto; padding:16px; }
+  .onglets, .periodes { display:flex; gap:8px; margin-bottom:14px; }
+  .onglets button, .periodes button { flex:1; font:inherit; font-weight:600; font-size:.92rem; padding:10px 8px; border-radius:12px;
+          border:1px solid var(--bord); background:var(--carte2); color:var(--doux); cursor:pointer; }
+  .onglets button[aria-selected="true"], .periodes button[aria-pressed="true"] { background:var(--or); color:#1c1604; border-color:var(--or); }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline:3px solid var(--or); outline-offset:2px; }
+  .kpis { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .kpi { background:var(--carte); border:1px solid var(--bord); border-radius:16px; padding:14px; }
+  .kpi b { display:block; font-size:1.7rem; line-height:1.1; }
+  .kpi span { font-size:.82rem; color:var(--doux); }
+  .carte { background:var(--carte); border:1px solid var(--bord); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .carte h2 { font-size:1rem; margin:0 0 12px; }
+  .legende { display:flex; gap:14px; font-size:.8rem; color:var(--doux); margin-bottom:8px; }
+  .legende i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; }
+  .graph { display:flex; align-items:flex-end; gap:2px; height:130px; }
+  .grp { flex:1; min-width:0; height:100%; display:flex; align-items:flex-end; justify-content:center; gap:1px; }
+  .bar { flex:1; max-width:9px; border-radius:3px 3px 0 0; min-height:2px; }
+  .bar.v { background:var(--vert); } .bar.c { background:var(--or); }
+  .axe { display:flex; justify-content:space-between; font-size:.75rem; color:var(--doux); margin-top:6px; }
+  .ligne { background:var(--carte2); border:1px solid var(--bord); border-radius:12px; padding:12px; margin-top:10px; }
+  .ligne:first-of-type { margin-top:0; }
+  .ligne h3 { font-size:.98rem; margin:0 0 2px; }
+  .ligne small { color:var(--doux); }
+  .nums { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:10px; text-align:center; }
+  .nums div { background:var(--carte); border-radius:10px; padding:6px 2px; }
+  .nums b { display:block; font-size:1.05rem; }
+  .nums span { font-size:.68rem; color:var(--doux); }
+  .jauge { height:6px; background:var(--carte); border-radius:99px; margin-top:10px; overflow:hidden; }
+  .jauge i { display:block; height:100%; background:var(--vert); }
+  select { width:100%; padding:12px; background:var(--carte2); color:var(--texte); border:1px solid var(--bord); border-radius:12px; font:inherit; margin-bottom:10px; }
+  .vide, .note { color:var(--doux); font-size:.9rem; margin:6px 0 0; }
+  .erreur { background:#3a1a14; border:1px solid var(--rouge); color:#ffd3cb; border-radius:12px; padding:12px; margin-bottom:14px; font-size:.92rem; }
+  .alerte { background:#3a2a0a; border:1px solid #b98a22; color:#ffe2a0; border-radius:12px; padding:12px; margin-bottom:14px; font-size:.92rem; }
+  .alerte a { color:var(--or); font-weight:700; }
+  .badge { display:inline-block; font-size:.72rem; font-weight:700; padding:3px 8px; border-radius:99px; margin-right:6px; }
+  .b-ok { background:#1c5a45; color:#9ff0cf; } .b-prog { background:#4a3a10; color:#ffd77a; }
+  .b-ko { background:#5a2218; color:#ffb4a6; } .b-bro { background:#2b3f39; color:var(--doux); }
+  .pub p { margin:8px 0 0; white-space:pre-wrap; word-break:break-word; font-size:.92rem; }
+  .pub a { color:var(--or); font-weight:700; font-size:.88rem; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header class="haut">
+  <a class="ret" href="index.html" aria-label="Retour à FRIBOUK">←</a>
+  <h1>Mon activité</h1>
+  <a class="lien" href="publier.html">📣 Publier</a>
+</header>
+
+<main>
+  <div class="alerte" id="alerte" hidden>Vous n'êtes pas connecté(e). <a href="index.html">Ouvrez FRIBOUK, touchez « Mon compte »</a>, puis revenez ici.</div>
+  <div class="erreur" id="erreur" hidden></div>
+
+  <div class="onglets" role="tablist">
+    <button type="button" role="tab" id="t-stats" aria-selected="true">📊 Statistiques</button>
+    <button type="button" role="tab" id="t-pubs" aria-selected="false">📣 Publications</button>
+  </div>
+
+  <!-- ================= STATISTIQUES ================= -->
+  <section id="v-stats">
+    <div class="periodes" id="periodes">
+      <button type="button" data-j="7" aria-pressed="false">7 jours</button>
+      <button type="button" data-j="30" aria-pressed="true">30 jours</button>
+      <button type="button" data-j="90" aria-pressed="false">90 jours</button>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><b id="k-visiteurs">–</b><span>Visiteurs uniques</span></div>
+      <div class="kpi"><b id="k-vues">–</b><span>Vues de produits</span></div>
+      <div class="kpi"><b id="k-contacts">–</b><span>Contacts WhatsApp</span></div>
+      <div class="kpi"><b id="k-paniers">–</b><span>Ajouts au panier</span></div>
+    </div>
+
+    <div class="carte">
+      <h2>Évolution</h2>
+      <div class="legende"><span><i style="background:var(--vert)"></i>Vues de produits</span><span><i style="background:var(--or)"></i>Contacts WhatsApp</span></div>
+      <div class="graph" id="graph" role="img" aria-label="Graphique des vues et des contacts par période"></div>
+      <div class="axe"><span id="axe-debut"></span><span id="axe-fin"></span></div>
+    </div>
+
+    <div class="carte">
+      <h2>Mes boutiques</h2>
+      <div id="liste-boutiques"></div>
+    </div>
+
+    <div class="carte">
+      <h2>Mes produits</h2>
+      <select id="filtre-boutique" aria-label="Filtrer par boutique"><option value="">Toutes les boutiques</option></select>
+      <div id="liste-produits"></div>
+      <p class="note">Les contacts comptent les clics sur « Commander sur WhatsApp ». Vos propres visites sont comptées aussi : testez avec un autre téléphone pour des chiffres réels.</p>
+    </div>
+  </section>
+
+  <!-- ================= PUBLICATIONS ================= -->
+  <section id="v-pubs" hidden>
+    <div class="carte"><h2>Mes publications Facebook</h2><div id="liste-pubs"></div></div>
+  </section>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const nb = (n) => Number(n || 0).toLocaleString("fr-FR");
+  let jours = 30, stats = null, pubsChargees = false;
+
+  function el(tag, cls, texte) { const e = document.createElement(tag); if (cls) e.className = cls; if (texte != null) e.textContent = texte; return e; }
+  function erreur(t) { const e = $("erreur"); e.textContent = t; e.hidden = !t; }
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function courte(d) { return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" }); }
+  function taux(contacts, vues) { return vues > 0 ? Math.round((contacts / vues) * 100) + " %" : "–"; }
+
+  /* ---------- Onglets ---------- */
+  function onglet(nom) {
+    const stat = nom === "stats";
+    $("v-stats").hidden = !stat; $("v-pubs").hidden = stat;
+    $("t-stats").setAttribute("aria-selected", stat); $("t-pubs").setAttribute("aria-selected", !stat);
+    if (!stat && !pubsChargees) chargerPubs();
+  }
+  $("t-stats").onclick = () => onglet("stats");
+  $("t-pubs").onclick = () => onglet("pubs");
+
+  /* ---------- Période ---------- */
+  $("periodes").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-j]"); if (!b) return;
+    jours = Number(b.dataset.j);
+    document.querySelectorAll("#periodes button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    chargerStats();
+  });
+
+  /* ---------- Statistiques ---------- */
+  async function chargerStats() {
+    erreur("");
+    const { data, error } = await db.rpc("mes_statistiques", { p_jours: jours });
+    if (error) {
+      erreur(/mes_statistiques|function/i.test(error.message)
+        ? "Les statistiques ne sont pas encore activées : exécutez le fichier 7_statistiques.sql dans Supabase."
+        : "Impossible de charger les statistiques : " + error.message);
+      return;
+    }
+    stats = data; rendreStats();
+  }
+
+  function rendreStats() {
+    const t = stats.totaux || {};
+    $("k-visiteurs").textContent = nb(stats.visiteurs);
+    $("k-vues").textContent = nb(t.vue_produit);
+    $("k-contacts").textContent = nb(t.clic_whatsapp);
+    $("k-paniers").textContent = nb(t.ajout_panier);
+    dessiner();
+
+    const zb = $("liste-boutiques"); zb.textContent = "";
+    const bs = stats.boutiques || [];
+    if (!bs.length) zb.appendChild(el("p", "vide", "Aucune boutique pour le moment."));
+    bs.forEach((b) => {
+      const l = el("div", "ligne");
+      l.appendChild(el("h3", null, b.nom));
+      l.appendChild(el("small", null, "Taux de contact : " + taux(b.contacts, b.vues)));
+      l.appendChild(nums([["Visites", b.visites], ["Vues", b.vues], ["Contacts", b.contacts], ["Paniers", b.paniers]]));
+      zb.appendChild(l);
+    });
+
+    const sel = $("filtre-boutique"), cur = sel.value;
+    sel.length = 1;
+    bs.forEach((b) => { const o = el("option", null, b.nom); o.value = b.id; sel.appendChild(o); });
+    sel.value = cur; rendreProduits();
+  }
+
+  function nums(paires) {
+    const g = el("div", "nums");
+    paires.forEach(([lib, val]) => { const d = el("div"); d.appendChild(el("b", null, nb(val))); d.appendChild(el("span", null, lib)); g.appendChild(d); });
+    return g;
+  }
+
+  function rendreProduits() {
+    const z = $("liste-produits"); z.textContent = "";
+    const f = $("filtre-boutique").value;
+    const ps = (stats.produits || []).filter((p) => !f || p.boutique_id === f);
+    if (!ps.length) { z.appendChild(el("p", "vide", "Aucun produit. Les chiffres apparaissent quand des visiteurs consultent vos produits sur BARKA.")); return; }
+    const max = Math.max(1, ...ps.map((p) => p.vues));
+    ps.forEach((p) => {
+      const l = el("div", "ligne");
+      l.appendChild(el("h3", null, p.nom));
+      l.appendChild(el("small", null, p.boutique + " · taux de contact " + taux(p.contacts, p.vues)));
+      const g = nums([["Vues", p.vues], ["Contacts", p.contacts], ["Paniers", p.paniers]]);
+      g.style.gridTemplateColumns = "repeat(3, 1fr)";
+      l.appendChild(g);
+      const j = el("div", "jauge"), i = el("i"); i.style.width = Math.round((p.vues / max) * 100) + "%"; j.appendChild(i); l.appendChild(j);
+      z.appendChild(l);
+    });
+  }
+  $("filtre-boutique").onchange = rendreProduits;
+
+  /* ---------- Graphique ---------- */
+  function dessiner() {
+    const zone = $("graph"); zone.textContent = "";
+    const pas = jours <= 30 ? 1 : 7, n = Math.ceil(jours / pas);
+    const map = {};
+    (stats.jours || []).forEach((r) => { (map[r.jour] = map[r.jour] || {})[r.type] = r.n; });
+    const auj = new Date(), groupes = [];
+    for (let i = n - 1; i >= 0; i--) {
+      let v = 0, c = 0, debut = null;
+      for (let j = 0; j < pas; j++) {
+        const d = new Date(auj); d.setDate(auj.getDate() - (i * pas + j));
+        const m = map[iso(d)] || {}; v += m.vue_produit || 0; c += m.clic_whatsapp || 0; debut = d;
+      }
+      groupes.push({ v, c, debut });
+    }
+    const max = Math.max(1, ...groupes.map((g) => Math.max(g.v, g.c)));
+    groupes.forEach((g) => {
+      const d = el("div", "grp"); d.title = courte(g.debut) + " : " + g.v + " vues, " + g.c + " contacts";
+      const a = el("div", "bar v"), b = el("div", "bar c");
+      a.style.height = (g.v / max) * 100 + "%"; b.style.height = (g.c / max) * 100 + "%";
+      d.appendChild(a); d.appendChild(b); zone.appendChild(d);
+    });
+    $("axe-debut").textContent = courte(groupes[0].debut); $("axe-fin").textContent = "Aujourd'hui";
+  }
+
+  /* ---------- Publications ---------- */
+  async function chargerPubs() {
+    const z = $("liste-pubs"); z.textContent = "Chargement…";
+    const { data, error } = await db.from("social_posts")
+      .select("id, message, status, created_at, scheduled_at, external_post_id, error, sponsored, budget_xof, social_accounts(name)")
+      .order("created_at", { ascending: false }).limit(50);
+    z.textContent = "";
+    if (error) { z.appendChild(el("p", "vide", "Impossible de charger les publications : " + error.message)); return; }
+    pubsChargees = true;
+    if (!data.length) { z.appendChild(el("p", "vide", "Aucune publication pour le moment. Touchez « 📣 Publier » en haut de la page.")); return; }
+    const etats = { published: ["Publié", "b-ok"], scheduled: ["Programmé", "b-prog"], failed: ["Échec", "b-ko"], draft: ["Brouillon", "b-bro"] };
+    data.forEach((p) => {
+      const [lib, cls] = etats[p.status] || [p.status, "b-bro"];
+      const l = el("div", "ligne pub");
+      const tete = el("div"); tete.appendChild(el("span", "badge " + cls, lib));
+      if (p.sponsored) tete.appendChild(el("span", "badge b-prog", "Sponsorisé · " + nb(p.budget_xof) + " FCFA"));
+      l.appendChild(tete);
+      const quand = p.status === "scheduled" && p.scheduled_at ? p.scheduled_at : p.created_at;
+      l.appendChild(el("small", null, (p.social_accounts ? p.social_accounts.name + " · " : "") + new Date(quand).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })));
+      const txt = (p.message || "").trim();
+      l.appendChild(el("p", null, txt.length > 160 ? txt.slice(0, 160) + "…" : txt));
+      if (p.status === "failed" && p.error) l.appendChild(el("p", "note", "Raison : " + p.error));
+      if (p.external_post_id) { const a = el("a", null, "Voir sur Facebook"); a.href = "https://www.facebook.com/" + p.external_post_id; a.target = "_blank"; a.rel = "noopener"; l.appendChild(a); }
+      z.appendChild(l);
+    });
+  }
+
+  /* ---------- Démarrage ---------- */
+  (async () => {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { $("alerte").hidden = false; return; }
+    chargerStats();
+  })();
+</script>
+</body>
+</html>
