@@ -487,7 +487,7 @@ async function chargerCatalogue() {
   vider(zone);
   zone.append(h("p", { class: "vide" }, "Chargement…"));
 
-  let requete = sb.from("produits").select("id, nom, description, prix, photo_url, stock, boutique_id, boutiques(nom, whatsapp)").eq("statut", "publie").order("created_at", { ascending: false }).limit(60);
+  let requete = sb.from("produits").select("id, nom, description, prix, photo_url, stock, boutique_id, boutiques(nom, whatsapp)").eq("statut", "publie").eq("actif", true).order("created_at", { ascending: false }).limit(60);
   const mot = $("#recherche-produit").value.trim().replace(/[%,]/g, " ");
   if (mot) requete = requete.ilike("nom", "%" + mot + "%");
   if (filtre.value) requete = requete.eq("boutique_id", filtre.value);
