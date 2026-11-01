@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Abonnements</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root { --fond:#0b2620; --carte:#12372f; --carte2:#0f2f28; --bord:#25544a; --texte:#eef5f2; --doux:#a9c2ba;
+          --or:#e8b64a; --vert:#2a9d78; --rouge:#ff8a7a; }
+  * { box-sizing:border-box; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body { margin:0; background:var(--fond); color:var(--texte); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+         font-size:16px; line-height:1.45; padding-bottom:40px; }
+  .haut { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px; padding:12px 16px;
+          background:rgba(11,38,32,.94); backdrop-filter:blur(8px); border-bottom:1px solid var(--bord); }
+  .haut a { color:var(--or); text-decoration:none; font-weight:700; font-size:1.3rem; line-height:1; padding:6px 10px 6px 0; }
+  .haut h1 { font-size:1.1rem; margin:0; }
+  main { max-width:620px; margin:0 auto; padding:16px; }
+  .carte { background:var(--carte); border:1px solid var(--bord); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .carte h2 { font-size:1.05rem; margin:0 0 4px; }
+  .sous { color:var(--doux); font-size:.9rem; margin:0 0 12px; }
+  .offre { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--carte2);
+           border:1px solid var(--bord); border-radius:12px; padding:12px; margin-top:10px; }
+  .offre b { display:block; }
+  .offre small { color:var(--doux); }
+  .prix { font-weight:800; color:var(--or); white-space:nowrap; }
+  button { font:inherit; font-weight:700; border:0; border-radius:10px; padding:10px 14px; background:var(--or); color:#1c1604; cursor:pointer; }
+  button:disabled { opacity:.55; cursor:default; }
+  button:focus-visible, a:focus-visible { outline:3px solid var(--or); outline-offset:2px; }
+  .actif { display:flex; justify-content:space-between; gap:8px; padding:10px 12px; background:var(--carte2);
+           border:1px solid var(--vert); border-radius:12px; margin-top:8px; }
+  .vide { color:var(--doux); font-size:.9rem; margin:6px 0 0; }
+  .badge { font-size:.72rem; font-weight:700; padding:3px 8px; border-radius:99px; }
+  .b-ok { background:#1c5a45; color:#9ff0cf; } .b-att { background:#4a3a10; color:#ffd77a; } .b-ko { background:#5a2218; color:#ffb4a6; }
+  .msg { border-radius:12px; padding:12px; margin-bottom:14px; font-size:.95rem; }
+  .msg.ok { background:#12372f; border:1px solid var(--vert); color:#9ff0cf; }
+  .msg.att { background:#3a2a0a; border:1px solid #b98a22; color:#ffe2a0; }
+  .msg.ko { background:#3a1a14; border:1px solid var(--rouge); color:#ffd3cb; }
+  .msg a { color:var(--or); font-weight:700; }
+  .regle { background:var(--carte2); border:1px dashed var(--bord); border-radius:12px; padding:12px; font-size:.9rem; color:var(--doux); margin-bottom:14px; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header class="haut"><a href="index.html" aria-label="Retour à FRIBOUK">←</a><h1>Abonnements</h1></header>
+<main>
+  <div class="msg att" id="alerte" hidden>Vous n'êtes pas connecté(e). <a href="index.html">Ouvrez FRIBOUK, touchez « Mon compte »</a>, puis revenez ici.</div>
+  <div class="msg" id="etat" hidden role="status" aria-live="polite"></div>
+
+  <div class="regle">
+    <b>Comment ça marche :</b> créer une boutique est gratuit, avec <b>2 produits gratuits</b>. À partir du 3<sup>e</sup> produit, un abonnement boutique est nécessaire.
+    Le chat IA se paie séparément, à la journée, à la semaine ou au mois. Paiement par <b>MTN, Moov ou Celtiis Money</b>.
+  </div>
+
+  <div class="carte">
+    <h2>Mes abonnements en cours</h2>
+    <div id="mes-abos"><p class="vide">Chargement…</p></div>
+  </div>
+
+  <div class="carte">
+    <h2>🏪 Abonnement boutique</h2>
+    <p class="sous">Ajoutez autant de produits que vous voulez pendant la durée choisie.</p>
+    <div id="offres-boutique"></div>
+  </div>
+
+  <div class="carte">
+    <h2>💬 Chat IA</h2>
+    <p class="sous">Discutez avec l'IA sans consommer vos crédits pendant la durée choisie.</p>
+    <div id="offres-ia"></div>
+  </div>
+
+  <div class="carte">
+    <h2>Mes derniers paiements</h2>
+    <div id="paiements"><p class="vide">Chargement…</p></div>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const fcfa = (n) => Number(n || 0).toLocaleString("fr-FR") + " FCFA";
+  const dateFr = (d) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  function el(tag, cls, texte) { const e = document.createElement(tag); if (cls) e.className = cls; if (texte != null) e.textContent = texte; return e; }
+  function etat(texte, type) { const e = $("etat"); e.hidden = !texte; e.className = "msg " + (type || ""); e.textContent = texte || ""; }
+  const token = async () => (await db.auth.getSession()).data.session?.access_token;
+
+  async function appeler(corps) {
+    const t = await token();
+    const r = await fetch(SUPABASE_URL + "/functions/v1/paiement", {
+      method: "POST", headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" }, body: JSON.stringify(corps),
+    });
+    return r.json();
+  }
+
+  async function chargerOffres() {
+    const { data } = await db.from("offres").select("*").order("jours");
+    ["boutique", "ia"].forEach((type) => {
+      const z = $("offres-" + type); z.textContent = "";
+      (data || []).filter((o) => o.type === type).forEach((o) => {
+        const l = el("div", "offre"), g = el("div");
+        g.appendChild(el("b", null, o.libelle.replace(/^[^:]+:\s*/, "")));
+        g.appendChild(el("small", null, o.jours + (o.jours > 1 ? " jours" : " jour")));
+        const d = el("div"); d.style.textAlign = "right";
+        d.appendChild(el("div", "prix", fcfa(o.prix_xof)));
+        const b = el("button", null, "Payer"); b.type = "button"; b.style.marginTop = "6px";
+        b.onclick = () => payer(o.code, b);
+        d.appendChild(b); l.appendChild(g); l.appendChild(d); z.appendChild(l);
+      });
+    });
+  }
+
+  async function payer(code, bouton) {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { $("alerte").hidden = false; return etat("Connectez-vous d'abord à FRIBOUK.", "ko"); }
+    bouton.disabled = true; etat("Ouverture du paiement sécurisé…", "att");
+    try {
+      const j = await appeler({ action: "creer", offre: code });
+      if (j.url) { location.href = j.url; return; }
+      etat(j.erreur || "Paiement impossible pour le moment.", "ko");
+    } catch (e) { etat("Problème de réseau. Réessayez.", "ko"); }
+    bouton.disabled = false;
+  }
+
+  async function chargerMesAbos() {
+    const z = $("mes-abos"); z.textContent = "";
+    const { data } = await db.from("abonnements").select("type, fin").gt("fin", new Date().toISOString()).order("fin", { ascending: false });
+    if (!data || !data.length) { z.appendChild(el("p", "vide", "Aucun abonnement en cours. Vous profitez de l'offre gratuite (2 produits).")); return; }
+    const noms = { boutique: "🏪 Abonnement boutique", ia: "💬 Chat IA" };
+    const vus = {};
+    data.forEach((a) => { if (vus[a.type]) return; vus[a.type] = true;
+      const l = el("div", "actif"); l.appendChild(el("b", null, noms[a.type])); l.appendChild(el("span", null, "jusqu'au " + dateFr(a.fin))); z.appendChild(l); });
+  }
+
+  async function chargerPaiements() {
+    const z = $("paiements"); z.textContent = "";
+    const { data } = await db.from("paiements").select("montant, statut, created_at, offres(libelle)").order("created_at", { ascending: false }).limit(10);
+    if (!data || !data.length) { z.appendChild(el("p", "vide", "Aucun paiement pour le moment.")); return; }
+    const lib = { paye: ["Payé", "b-ok"], en_attente: ["En attente", "b-att"], echec: ["Échoué", "b-ko"] };
+    data.forEach((p) => {
+      const l = el("div", "offre"), g = el("div");
+      g.appendChild(el("b", null, p.offres ? p.offres.libelle : "Offre")); g.appendChild(el("small", null, dateFr(p.created_at) + " · " + fcfa(p.montant)));
+      const [t, c] = lib[p.statut] || [p.statut, "b-att"];
+      l.appendChild(g); l.appendChild(el("span", "badge " + c, t)); z.appendChild(l);
+    });
+  }
+
+  // Retour depuis la page de paiement : on vérifie auprès du serveur
+  async function verifierRetour(id) {
+    etat("Vérification de votre paiement…", "att");
+    for (let i = 0; i < 8; i++) {
+      const j = await appeler({ action: "verifier", paiement_id: id }).catch(() => ({}));
+      if (j.statut === "paye") {
+        etat("✔ Paiement confirmé ! Votre abonnement est activé.", "ok");
+        history.replaceState(null, "", location.pathname); return;
+      }
+      if (j.statut === "echec") { etat("Le paiement a échoué ou a été annulé. Vous pouvez réessayer.", "ko"); return; }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    etat("Paiement en cours de confirmation. Actualisez cette page dans une minute.", "att");
+  }
+
+  (async () => {
+    const { data: { session } } = await db.auth.getSession();
+    chargerOffres();
+    if (!session) { $("alerte").hidden = false; $("mes-abos").textContent = ""; $("paiements").textContent = ""; return; }
+    const id = new URLSearchParams(location.search).get("paiement");
+    if (id) await verifierRetour(id);
+    chargerMesAbos(); chargerPaiements();
+  })();
+</script>
+</body>
+</html>
