@@ -282,7 +282,12 @@
         headers: { Authorization: "Bearer " + (await token()), "Content-Type": "application/json" },
         body: JSON.stringify({ post_id: post.id }) });
       const j = await r.json();
-      if (j.ok) msg("Publié !", true, j.id ? "https://www.facebook.com/" + j.id : null);
+      if (j.ok) {
+  const lien = j.id ? "https://www.facebook.com/" + j.id : null;
+  msg(sponso
+    ? "Publié ! Ouvrez la publication et appuyez sur « Booster la publication » pour la sponsoriser."
+    : "Publié !", true, lien);
+      }
       else msg(j.error || "Échec de la publication.", false);
     } catch (e) { msg("Problème de réseau. Vérifiez votre connexion.", false); }
     btn.disabled = false;
