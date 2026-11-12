@@ -161,13 +161,23 @@
     }
     etat("Paiement en cours de confirmation. Actualisez cette page dans une minute.", "att");
   }
+    // Revérifie les paiements restés « en attente » (ex. confirmés après le retour)
+  async function reverifierEnAttente(dejaId) {
+    const { data } = await db.from("paiements").select("id")
+      .eq("statut", "en_attente").order("created_at", { ascending: false }).limit(5);
+    for (const p of data || []) {
+      if (p.id === dejaId) continue;
+      await appeler({ action: "verifier", paiement_id: p.id }).catch(() => {});
+    }
+  }
 
   (async () => {
     const { data: { session } } = await db.auth.getSession();
     chargerOffres();
     if (!session) { $("alerte").hidden = false; $("mes-abos").textContent = ""; $("paiements").textContent = ""; return; }
     const id = new URLSearchParams(location.search).get("paiement");
-    if (id) await verifierRetour(id);
+        if (id) await verifierRetour(id);
+    await reverifierEnAttente(id);
     chargerMesAbos(); chargerPaiements();
   })();
 </script>
