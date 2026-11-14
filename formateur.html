@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Espace formateur</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root{--fond:#0b2620;--carte:#12372f;--carte2:#0f2f28;--bord:#25544a;--texte:#eef5f2;--doux:#a9c2ba;--or:#e8b64a;--vert:#2a9d78;--rouge:#ff8a7a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;padding-bottom:40px}
+  .haut{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(11,38,32,.94);border-bottom:1px solid var(--bord)}
+  .haut a{color:var(--or);text-decoration:none;font-weight:700;font-size:1.3rem;padding:6px 10px 6px 0}
+  .haut h1{font-size:1.1rem;margin:0}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  .carte{background:var(--carte);border:1px solid var(--bord);border-radius:16px;padding:16px;margin-bottom:14px}
+  .carte h2{font-size:1.05rem;margin:0 0 8px}
+  label{display:block;font-size:.85rem;color:var(--doux);margin:12px 0 6px;font-weight:600}
+  input,select,textarea{width:100%;padding:12px;background:var(--carte2);color:var(--texte);border:1px solid var(--bord);border-radius:12px;font:inherit}
+  textarea{min-height:90px;resize:vertical}
+  .btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 16px;cursor:pointer;background:var(--or);color:#1c1604}
+  .btn.contour{background:transparent;color:var(--or);border:1px solid var(--or)}
+  .btn.petit{padding:8px 12px;font-size:.9rem}
+  .btn:disabled{opacity:.55;cursor:default}
+  .rang{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .badge{display:inline-block;font-size:.78rem;padding:3px 10px;border-radius:999px;border:1px solid var(--bord);color:var(--doux);margin-right:6px}
+  .badge.ok{border-color:var(--vert);color:#7be0b8}
+  .badge.ko{border-color:var(--rouge);color:var(--rouge)}
+  .doux{color:var(--doux);font-size:.9rem;margin:6px 0 0}
+  .msg{min-height:1.2em;margin-top:10px;font-size:.92rem}
+  .msg.ok{color:#7be0b8}.msg.ko{color:var(--rouge)}
+  .alerte{background:#3a2a0a;border:1px solid #b98a22;color:#ffe2a0;border-radius:12px;padding:12px;margin-bottom:14px}
+  .alerte a{color:var(--or);font-weight:700}
+  .item{background:var(--carte2);border:1px solid var(--bord);border-radius:12px;padding:12px;margin-top:10px}
+  .item h3{margin:0 0 4px;font-size:1rem}
+  [hidden]{display:none !important}
+  :focus-visible{outline:3px solid var(--or);outline-offset:2px}
+</style>
+</head>
+<body>
+<header class="haut">
+  <a href="formations.html" aria-label="Retour aux formations">←</a>
+  <h1>Espace formateur</h1>
+</header>
+<main>
+  <div class="alerte" id="alerte" hidden>
+    Vous n'êtes pas connecté(e). <a href="index.html">Ouvrez FRIBOUK, touchez « Mon compte »</a>, puis revenez ici.
+  </div>
+
+  <!-- Étape 1 : demande d'espace -->
+  <section class="carte" id="bloc-demande" hidden>
+    <h2>Demander un espace de formation</h2>
+    <p class="doux">Un espace est attribué après vérification de vos preuves par l'administrateur de FRIBOUK.</p>
+    <p class="msg ko" id="refus" hidden></p>
+    <label for="dem-nom">Nom de votre espace</label>
+    <input id="dem-nom" maxlength="80" placeholder="Ex. : Atelier de couture Parakou">
+    <label for="dem-desc">Présentation</label>
+    <textarea id="dem-desc" maxlength="600" placeholder="Qui êtes-vous et que enseignez-vous ?"></textarea>
+    <label for="dem-mode">Type de formations</label>
+    <select id="dem-mode">
+      <option value="en_ligne">En ligne (PDF, vidéo)</option>
+      <option value="presentiel">Présentiel</option>
+      <option value="les_deux">Les deux</option>
+    </select>
+    <label for="dem-ville">Ville</label>
+    <input id="dem-ville" placeholder="Ex. : Parakou">
+    <label for="dem-wa">Numéro WhatsApp</label>
+    <input id="dem-wa" inputmode="tel" placeholder="Ex. : 0194234688">
+    <label for="dem-preuves">Preuves (diplômes, attestations, pièce d'identité, photos de réalisations)</label>
+    <input id="dem-preuves" type="file" accept="image/*,application/pdf" multiple>
+    <p class="doux">Jusqu'à 5 fichiers de 5 Mo maximum. Seul l'administrateur peut les voir.</p>
+    <div class="rang"><button class="btn" id="dem-envoyer" type="button">Envoyer ma demande</button></div>
+    <div class="msg" id="dem-msg" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="carte" id="bloc-attente" hidden>
+    <h2>Demande en cours d'examen</h2>
+    <p class="doux">Votre demande a bien été reçue. Vous pourrez ajouter vos formations dès qu'elle sera approuvée. Revenez sur cette page pour voir la réponse.</p>
+  </section>
+
+  <!-- Étape 2 : espace attribué -->
+  <div id="bloc-espace" hidden>
+    <section class="carte">
+      <h2 id="nom-espace"></h2>
+      <p class="doux" id="abo-etat"></p>
+      <p class="doux">À partir de la 3e formation payante, un abonnement formateur est nécessaire. Les formations gratuites restent toujours sans abonnement.</p>
+      <div class="rang" id="offres"></div>
+      <div class="msg" id="abo-msg" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="carte">
+      <h2>Ajouter une formation</h2>
+      <label for="f-titre">Titre</label>
+      <input id="f-titre" maxlength="100">
+      <label for="f-desc">Description</label>
+      <textarea id="f-desc" maxlength="800"></textarea>
+      <label for="f-cat">Matière ou domaine</label>
+      <input id="f-cat" maxlength="60" placeholder="Ex. : Couture, Informatique, Cuisine">
+      <label for="f-format">Format</label>
+      <select id="f-format">
+        <option value="pdf">PDF</option>
+        <option value="video">Vidéo (lien)</option>
+        <option value="presentiel">Présentiel</option>
+      </select>
+      <div id="f-lien-box">
+        <label for="f-lien">Lien du contenu (https://…)</label>
+        <input id="f-lien" type="url" inputmode="url" placeholder="https://…">
+      </div>
+      <div id="f-lieu-box" hidden>
+        <label for="f-lieu">Lieu et horaires</label>
+        <input id="f-lieu" maxlength="160" placeholder="Ex. : Parakou, quartier Titirou, samedi 9h">
+      </div>
+      <label for="f-duree">Durée totale (en heures, 40 h maximum)</label>
+      <input id="f-duree" type="number" min="0.5" max="40" step="0.5" inputmode="decimal" value="2">
+      <label for="f-prix">Prix en FCFA (0 = gratuit)</label>
+      <input id="f-prix" type="number" min="0" step="500" inputmode="numeric" value="0">
+      <div class="rang">
+        <button class="btn contour" id="f-brouillon" type="button">Enregistrer en brouillon</button>
+        <button class="btn" id="f-envoyer" type="button">Envoyer pour approbation</button>
+      </div>
+      <div class="msg" id="f-msg" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="carte">
+      <h2>Mes formations</h2>
+      <div id="mes-formations"><p class="doux">Chargement…</p></div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const FUNCTIONS = SUPABASE_URL + "/functions/v1";
+  const $ = (id) => document.getElementById(id);
+  const STATUTS = { brouillon: "Brouillon", en_attente: "En attente d'approbation", approuve: "Publiée", refuse: "Refusée" };
+  let user = null, espace = null;
+
+  const el = (t, a = {}, ...k) => {
+    const n = document.createElement(t);
+    for (const [x, v] of Object.entries(a)) {
+      if (x === "class") n.className = v; else if (x.startsWith("on")) n[x] = v; else n.setAttribute(x, v);
+    }
+    n.append(...k.filter((c) => c !== null && c !== undefined && c !== false));
+    return n;
+  };
+  const msg = (id, t, ok = true) => { const m = $(id); m.className = "msg " + (ok ? "ok" : "ko"); m.textContent = t; };
+  const token = async () => (await db.auth.getSession()).data.session?.access_token;
+  const dateFr = (d) => new Date(d).toLocaleDateString("fr-FR");
+  const lienSur = (u) => { try { const x = new URL(u); return x.protocol === "https:" ? x.href : null; } catch (e) { return null; } };
+
+  /* ---------- Démarrage ---------- */
+  async function init() {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { $("alerte").hidden = false; return; }
+    user = session.user;
+    const { data: e } = await db.from("espaces_formation").select("*").eq("user_id", user.id).maybeSingle();
+    espace = e;
+    if (espace) {
+      $("bloc-demande").hidden = true; $("bloc-attente").hidden = true; $("bloc-espace").hidden = false;
+      $("nom-espace").textContent = espace.nom;
+      chargerAbo(); chargerOffres(); chargerMesFormations();
+    } else {
+      $("bloc-espace").hidden = true;
+      await chargerDemande();
+    }
+  }
+
+  async function chargerDemande() {
+    const { data } = await db.from("demandes_formateur").select("statut,motif_refus").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
+    const d = (data || [])[0];
+    const attente = !!(d && d.statut === "en_attente");
+    $("bloc-attente").hidden = !attente;
+    $("bloc-demande").hidden = attente;
+    if (d && d.statut === "refuse") {
+      $("refus").hidden = false;
+      $("refus").textContent = "Votre dernière demande a été refusée" + (d.motif_refus ? " : " + d.motif_refus : "") + ". Vous pouvez en envoyer une nouvelle.";
+    }
+  }
+
+  /* ---------- Demande d'espace ---------- */
+  $("dem-envoyer").onclick = async () => {
+    const nom = $("dem-nom").value.trim();
+    const fichiers = [...$("dem-preuves").files];
+    if (!nom) return msg("dem-msg", "Donnez un nom à votre espace.", false);
+    if (!fichiers.length) return msg("dem-msg", "Ajoutez au moins une preuve.", false);
+    if (fichiers.length > 5) return msg("dem-msg", "5 fichiers au maximum.", false);
+    for (const f of fichiers) {
+      if (!(f.type.startsWith("image/") || f.type === "application/pdf")) return msg("dem-msg", "Seuls les images et les PDF sont acceptés.", false);
+      if (f.size > 5 * 1024 * 1024) return msg("dem-msg", "Chaque fichier doit faire 5 Mo au maximum.", false);
+    }
+    const btn = $("dem-envoyer"); btn.disabled = true; msg("dem-msg", "Envoi des preuves…");
+    const chemins = [];
+    for (const [i, f] of fichiers.entries()) {
+      const ext = (f.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const chemin = user.id + "/" + Date.now() + "-" + i + "." + ext;
+      const { error } = await db.storage.from("preuves-formateurs").upload(chemin, f);
+      if (error) { btn.disabled = false; return msg("dem-msg", "Envoi impossible : " + error.message, false); }
+      chemins.push(chemin);
+    }
+    const { error } = await db.from("demandes_formateur").insert({
+      user_id: user.id, nom_espace: nom, description: $("dem-desc").value.trim(),
+      mode: $("dem-mode").value, ville: $("dem-ville").value.trim(), whatsapp: $("dem-wa").value.trim(), preuves: chemins
+    });
+    btn.disabled = false;
+    if (error) return msg("dem-msg", "Demande impossible : " + error.message, false);
+    $("refus").hidden = true;
+    await chargerDemande();
+  };
+
+  /* ---------- Abonnement formateur ---------- */
+  async function chargerAbo() {
+    const { data } = await db.from("abonnements").select("fin").eq("user_id", user.id).eq("type", "formation")
+      .gt("fin", new Date().toISOString()).order("fin", { ascending: false }).limit(1);
+    const a = (data || [])[0];
+    $("abo-etat").textContent = a
+      ? "Abonnement formateur actif jusqu'au " + dateFr(a.fin) + "."
+      : "Pas d'abonnement : vous pouvez publier 2 formations payantes et autant de formations gratuites que vous voulez.";
+  }
+  async function chargerOffres() {
+    const { data } = await db.from("offres").select("code,libelle,prix_xof").eq("type", "formation").eq("actif", true).order("prix_xof");
+    const z = $("offres"); z.replaceChildren();
+    (data || []).forEach((o) => z.append(el("button", { class: "btn contour", type: "button", onclick: () => payer(o.code) },
+      o.libelle + " : " + o.prix_xof.toLocaleString("fr-FR") + " FCFA")));
+  }
+  async function payer(code) {
+    msg("abo-msg", "Ouverture du paiement…");
+    try {
+      const r = await fetch(FUNCTIONS + "/paiement", { method: "POST",
+        headers: { Authorization: "Bearer " + (await token()), "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "creer", offre: code }) });
+      const j = await r.json();
+      if (j.url) location.href = j.url; else msg("abo-msg", j.erreur || "Paiement impossible.", false);
+    } catch (e) { msg("abo-msg", "Problème de réseau. Réessayez.", false); }
+  }
+
+  /* ---------- Formations ---------- */
+  $("f-format").onchange = () => {
+    const p = $("f-format").value === "presentiel";
+    $("f-lien-box").hidden = p; $("f-lieu-box").hidden = !p;
+  };
+
+  async function enregistrer(statut) {
+    const titre = $("f-titre").value.trim();
+    const format = $("f-format").value;
+    const duree = Number($("f-duree").value);
+    const prix = parseInt($("f-prix").value || "0", 10);
+    if (!titre) return msg("f-msg", "Donnez un titre à la formation.", false);
+    if (!(duree > 0 && duree <= 40)) return msg("f-msg", "La durée doit être comprise entre 0,5 h et 40 h.", false);
+    if (!Number.isInteger(prix) || prix < 0) return msg("f-msg", "Le prix doit être un nombre positif ou 0.", false);
+    const ligne = { espace_id: espace.id, user_id: user.id, titre, description: $("f-desc").value.trim(),
+      categorie: $("f-cat").value.trim(), format, duree_heures: duree, prix_xof: prix, statut };
+    if (format === "presentiel") {
+      ligne.lieu = $("f-lieu").value.trim();
+      if (!ligne.lieu) return msg("f-msg", "Indiquez le lieu et les horaires.", false);
+    } else {
+      const lien = lienSur($("f-lien").value.trim());
+      if (!lien) return msg("f-msg", "Le lien doit commencer par https://", false);
+      ligne.lien_contenu = lien;
+    }
+    $("f-brouillon").disabled = $("f-envoyer").disabled = true;
+    const { error } = await db.from("formations").insert(ligne);
+    $("f-brouillon").disabled = $("f-envoyer").disabled = false;
+    if (error) {
+      const limite = /Limite atteinte/i.test(error.message);
+      msg("f-msg", limite ? "Vous avez atteint la limite de 2 formations payantes. Choisissez un abonnement formateur en haut de la page, ou mettez le prix à 0." : "Enregistrement impossible : " + error.message, false);
+      if (limite) window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    msg("f-msg", statut === "en_attente" ? "Formation envoyée. Elle sera visible après approbation." : "Brouillon enregistré.");
+    ["f-titre", "f-desc", "f-cat", "f-lien", "f-lieu"].forEach((i) => { $(i).value = ""; });
+    chargerMesFormations();
+  }
+  $("f-brouillon").onclick = () => enregistrer("brouillon");
+  $("f-envoyer").onclick = () => enregistrer("en_attente");
+
+  async function chargerMesFormations() {
+    const z = $("mes-formations");
+    const { data, error } = await db.from("formations").select("id,titre,statut,prix_xof,motif_refus").eq("user_id", user.id).order("created_at", { ascending: false });
+    z.replaceChildren();
+    if (error || !data.length) { z.append(el("p", { class: "doux" }, "Aucune formation pour le moment.")); return; }
+    data.forEach((f) => {
+      const classe = f.statut === "approuve" ? "ok" : f.statut === "refuse" ? "ko" : "";
+      z.append(el("div", { class: "item" },
+        el("h3", {}, f.titre),
+        el("span", { class: "badge " + classe }, STATUTS[f.statut]),
+        el("span", { class: "badge" }, f.prix_xof > 0 ? f.prix_xof.toLocaleString("fr-FR") + " FCFA" : "Gratuit"),
+        f.statut === "refuse" && f.motif_refus ? el("p", { class: "doux" }, "Motif : " + f.motif_refus) : null,
+        el("div", { class: "rang" },
+          (f.statut === "brouillon" || f.statut === "refuse")
+            ? el("button", { class: "btn petit", type: "button", onclick: async () => {
+                const { error: e } = await db.from("formations").update({ statut: "en_attente", motif_refus: null }).eq("id", f.id);
+                if (e) msg("f-msg", /Limite atteinte/i.test(e.message) ? "Limite de 2 formations payantes atteinte : choisissez un abonnement formateur en haut de la page." : e.message, false);
+                else chargerMesFormations();
+              } }, "Envoyer pour approbation") : null,
+          el("button", { class: "btn contour petit", type: "button", onclick: async () => {
+            if (!confirm("Supprimer cette formation ?")) return;
+            await db.from("formations").delete().eq("id", f.id);
+            chargerMesFormations();
+          } }, "Supprimer"))));
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
