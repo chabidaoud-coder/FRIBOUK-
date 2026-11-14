@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Salles d'études</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root{--fond:#0b2620;--carte:#12372f;--carte2:#0f2f28;--bord:#25544a;--texte:#eef5f2;--doux:#a9c2ba;--or:#e8b64a;--vert:#2a9d78;--rouge:#ff8a7a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;padding-bottom:80px}
+  .haut{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(11,38,32,.94);border-bottom:1px solid var(--bord)}
+  .haut a{color:var(--or);text-decoration:none;font-weight:700;font-size:1.3rem;padding:6px 10px 6px 0}
+  .haut h1{font-size:1.1rem;margin:0}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  .carte{background:var(--carte);border:1px solid var(--bord);border-radius:16px;padding:16px;margin-bottom:14px}
+  .carte h2,.carte h3{margin:0 0 6px;font-size:1.05rem}
+  .grille{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .choix{font:inherit;font-weight:700;padding:16px 10px;background:var(--carte);color:var(--texte);border:1px solid var(--bord);border-radius:14px;cursor:pointer;text-align:center}
+  .choix:active{border-color:var(--or)}
+  .onglets{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px}
+  .onglet{flex:none;font:inherit;font-weight:700;font-size:.92rem;padding:9px 14px;background:transparent;color:var(--doux);border:1px solid var(--bord);border-radius:999px;cursor:pointer}
+  .onglet[aria-pressed="true"]{background:var(--or);color:#1c1604;border-color:var(--or)}
+  label{display:block;font-size:.85rem;color:var(--doux);margin:12px 0 6px;font-weight:600}
+  input,select,textarea{width:100%;padding:12px;background:var(--carte2);color:var(--texte);border:1px solid var(--bord);border-radius:12px;font:inherit}
+  textarea{min-height:80px;resize:vertical}
+  .btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:11px 14px;cursor:pointer;background:var(--or);color:#1c1604;text-decoration:none;display:inline-block}
+  .btn.contour{background:transparent;color:var(--or);border:1px solid var(--or)}
+  .btn.petit{padding:6px 10px;font-size:.85rem}
+  .btn.rouge{background:transparent;color:var(--rouge);border:1px solid var(--rouge)}
+  .rang{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .doux{color:var(--doux);font-size:.9rem;margin:4px 0 0;word-break:break-word}
+  .item{background:var(--carte2);border:1px solid var(--bord);border-radius:12px;padding:12px;margin-top:10px}
+  .item.masque{opacity:.55}
+  .rep{margin:8px 0 0 12px;padding-left:10px;border-left:2px solid var(--bord)}
+  .nouveau{background:var(--carte2);border:1px dashed var(--bord);border-radius:12px;padding:12px;margin-bottom:14px}
+  a.lien{color:var(--or);font-weight:700}
+  .retour{background:none;border:0;color:var(--or);font:inherit;font-weight:700;cursor:pointer;padding:0 0 12px}
+  #msg{position:fixed;left:12px;right:12px;bottom:12px;z-index:9;padding:12px;border-radius:12px;background:var(--carte);border:1px solid var(--bord);text-align:center}
+  #msg.ko{color:var(--rouge);border-color:var(--rouge)}
+  [hidden]{display:none !important}
+  :focus-visible{outline:3px solid var(--or);outline-offset:2px}
+</style>
+</head>
+<body>
+<header class="haut">
+  <a href="index.html" aria-label="Retour à FRIBOUK">←</a>
+  <h1>Salles d'études</h1>
+</header>
+<main id="vue"><p class="doux">Chargement…</p></main>
+<div id="msg" role="status" aria-live="polite" hidden></div>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const NIVEAUX = ["6e", "5e", "4e", "3e", "2nde", "1ère", "Tle"];
+  const $ = (id) => document.getElementById(id);
+  let user = null, estFormateur = false, estAdmin = false, salles = [], noms = {}, salle = null, onglet = "cours";
+  let minuteur = null;
+
+  const el = (t, a = {}, ...k) => {
+    const n = document.createElement(t);
+    for (const [x, v] of Object.entries(a)) {
+      if (x === "class") n.className = v; else if (x.startsWith("on")) n[x] = v; else n.setAttribute(x, v);
+    }
+    n.append(...k.filter((c) => c !== null && c !== undefined && c !== false));
+    return n;
+  };
+  const dire = (t, ok = true) => {
+    const m = $("msg"); m.textContent = t; m.className = ok ? "" : "ko"; m.hidden = false;
+    clearTimeout(minuteur); minuteur = setTimeout(() => { m.hidden = true; }, 4000);
+  };
+  const lienSur = (u) => { try { const x = new URL(u); return x.protocol === "https:" ? x.href : null; } catch (e) { return null; } };
+  const auteur = (uid) => noms[uid] ? "Formateur · " + noms[uid] : "Élève";
+  const dateHeure = (d) => new Date(d).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+  const champ = (label, node) => el("div", {}, el("label", {}, label), node);
+  const vue = (...k) => $("vue").replaceChildren(...k);
+
+  /* ---------- Démarrage ---------- */
+  async function init() {
+    const { data: { session } } = await db.auth.getSession();
+    user = session ? session.user : null;
+    const [r1, r2] = await Promise.all([
+      db.from("salles").select("id,niveau,matiere").order("matiere"),
+      db.from("espaces_formation").select("user_id,nom")
+    ]);
+    salles = r1.data || [];
+    (r2.data || []).forEach((x) => { noms[x.user_id] = x.nom; });
+    if (user) {
+      estFormateur = !!noms[user.id];
+      const { data: ok } = await db.rpc("est_admin_fribouk");
+      estAdmin = !!ok;
+    }
+    voirNiveaux();
+  }
+
+  /* ---------- Navigation ---------- */
+  function voirNiveaux() {
+    const g = el("div", { class: "grille" });
+    NIVEAUX.forEach((n) => g.append(el("button", { class: "choix", type: "button", onclick: () => voirMatieres(n) }, n)));
+    vue(el("div", { class: "carte" }, el("h2", {}, "Choisissez votre classe"),
+      el("p", { class: "doux" }, "Cours d'approfondissement, exercices corrigés, séances en direct et questions pour chaque matière.")), g,
+      estAdmin ? el("p", {}, el("button", { class: "btn contour", type: "button", onclick: voirSignalements }, "Voir les signalements")) : null);
+  }
+
+  function voirMatieres(niveau) {
+    const g = el("div", { class: "grille" });
+    salles.filter((s) => s.niveau === niveau).forEach((s) => g.append(el("button", { class: "choix", type: "button", onclick: () => ouvrirSalle(s) }, s.matiere)));
+    vue(el("button", { class: "retour", type: "button", onclick: voirNiveaux }, "← Classes"),
+      el("div", { class: "carte" }, el("h2", {}, "Classe de " + niveau), el("p", { class: "doux" }, "Choisissez une matière.")), g);
+  }
+
+  function ouvrirSalle(s, ong) {
+    salle = s;
+    const barre = el("div", { class: "onglets", role: "tablist" });
+    [["cours", "Cours"], ["exercice", "Exercices"], ["seances", "Séances"], ["questions", "Questions"]].forEach(([id, nom]) =>
+      barre.append(el("button", { class: "onglet", type: "button", "data-id": id, "aria-pressed": "false", onclick: () => afficherOnglet(id) }, nom)));
+    vue(el("button", { class: "retour", type: "button", onclick: () => voirMatieres(s.niveau) }, "← " + s.niveau),
+      el("div", { class: "carte" }, el("h2", {}, s.niveau + " · " + s.matiere)), barre, el("div", { id: "corps" }));
+    afficherOnglet(ong || "cours");
+  }
+
+  async function afficherOnglet(id) {
+    onglet = id;
+    document.querySelectorAll(".onglet").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+    const corps = $("corps"); corps.replaceChildren(el("p", { class: "doux" }, "Chargement…"));
+    const zone = el("div", {});
+    if (id === "cours" || id === "exercice") await chargerRessources(zone, id);
+    else if (id === "seances") await chargerSeances(zone);
+    else await chargerQuestions(zone);
+    corps.replaceChildren(zone);
+  }
+
+  /* ---------- Actions communes ---------- */
+  async function signaler(cible, cibleId) {
+    if (!user) return dire("Connectez-vous pour signaler.", false);
+    const motif = prompt("Pourquoi signalez-vous ce contenu ?");
+    if (!motif || !motif.trim()) return;
+    const { error } = await db.from("signalements").insert({ user_id: user.id, salle_id: salle.id, cible, cible_id: cibleId, motif: motif.trim().slice(0, 300) });
+    dire(error ? "Signalement impossible." : "Merci, le contenu sera examiné.", !error);
+  }
+  async function masquer(table, x) {
+    const { error } = await db.from(table).update({ masque: !x.masque }).eq("id", x.id);
+    if (error) return dire(error.message, false);
+    afficherOnglet(onglet);
+  }
+  async function supprimer(table, id) {
+    if (!confirm("Supprimer définitivement ?")) return;
+    const { error } = await db.from(table).delete().eq("id", id);
+    if (error) return dire(error.message, false);
+    afficherOnglet(onglet);
+  }
+  const boutonsGestion = (table, cible, x) => el("div", { class: "rang" },
+    user ? el("button", { class: "btn contour petit", type: "button", onclick: () => signaler(cible, x.id) }, "Signaler") : null,
+    estAdmin ? el("button", { class: "btn contour petit", type: "button", onclick: () => masquer(table, x) }, x.masque ? "Rétablir" : "Masquer") : null,
+    user && (estAdmin || x.user_id === user.id) ? el("button", { class: "btn rouge petit", type: "button", onclick: () => supprimer(table, x.id) }, "Supprimer") : null);
+
+  /* ---------- Cours et exercices ---------- */
+  async function chargerRessources(zone, type) {
+    if (estFormateur) {
+      const titre = el("input", { maxlength: "120" });
+      const desc = el("textarea", { maxlength: "600" });
+      const lien = el("input", { type: "url", inputmode: "url", placeholder: "https://…" });
+      const corr = el("input", { type: "url", inputmode: "url", placeholder: "https://…" });
+      zone.append(el("div", { class: "nouveau" },
+        el("h3", {}, type === "cours" ? "Ajouter un cours" : "Ajouter un exercice"),
+        champ("Titre", titre), champ("Description", desc),
+        champ(type === "cours" ? "Lien du PDF (https://…)" : "Lien de l'énoncé (https://…)", lien),
+        type === "exercice" ? champ("Lien du corrigé (facultatif)", corr) : null,
+        el("div", { class: "rang" }, el("button", { class: "btn", type: "button", onclick: async () => {
+          const l = lienSur(lien.value.trim());
+          const c = corr.value.trim() ? lienSur(corr.value.trim()) : null;
+          if (titre.value.trim().length < 3) return dire("Donnez un titre d'au moins 3 caractères.", false);
+          if (!l) return dire("Le lien doit commencer par https://", false);
+          if (corr.value.trim() && !c) return dire("Le lien du corrigé doit commencer par https://", false);
+          const { error } = await db.from("salle_ressources").insert({ salle_id: salle.id, user_id: user.id, type, titre: titre.value.trim(),
+            description: desc.value.trim() || null, lien: l, lien_corrige: c });
+          if (error) return dire("Publication impossible : " + error.message, false);
+          dire("Publié."); afficherOnglet(onglet);
+        } }, "Publier"))));
+    }
+    const { data, error } = await db.from("salle_ressources").select("*").eq("salle_id", salle.id).eq("type", type).order("created_at", { ascending: false });
+    if (error) { zone.append(el("p", { class: "doux" }, "Chargement impossible.")); return; }
+    if (!data.length) { zone.append(el("p", { class: "doux" }, "Rien n'est encore publié ici.")); return; }
+    data.forEach((x) => zone.append(el("article", { class: "item" + (x.masque ? " masque" : "") },
+      el("h3", {}, x.titre + (x.masque ? " (masqué)" : "")),
+      el("p", { class: "doux" }, auteur(x.user_id) + " · " + dateHeure(x.created_at)),
+      x.description ? el("p", { class: "doux" }, x.description) : null,
+      el("div", { class: "rang" },
+        el("a", { class: "btn petit", href: x.lien, target: "_blank", rel: "noopener" }, type === "cours" ? "Ouvrir le cours" : "Ouvrir l'énoncé"),
+        x.lien_corrige ? el("a", { class: "btn contour petit", href: x.lien_corrige, target: "_blank", rel: "noopener" }, "Voir le corrigé") : null),
+      boutonsGestion("salle_ressources", "ressource", x))));
+  }
+
+  /* ---------- Séances en direct ---------- */
+  async function chargerSeances(zone) {
+    if (estFormateur) {
+      const titre = el("input", { maxlength: "120" });
+      const debut = el("input", { type: "datetime-local" });
+      const duree = el("input", { type: "number", min: "15", max: "240", step: "15", value: "60", inputmode: "numeric" });
+      const lien = el("input", { type: "url", inputmode: "url", placeholder: "https://meet.google.com/… ou lien WhatsApp" });
+      zone.append(el("div", { class: "nouveau" },
+        el("h3", {}, "Programmer une séance"),
+        champ("Sujet de la séance", titre), champ("Date et heure", debut), champ("Durée (minutes)", duree), champ("Lien pour rejoindre (https://…)", lien),
+        el("div", { class: "rang" }, el("button", { class: "btn", type: "button", onclick: async () => {
+          const l = lienSur(lien.value.trim()), d = parseInt(duree.value, 10);
+          if (titre.value.trim().length < 3) return dire("Donnez un sujet d'au moins 3 caractères.", false);
+          if (!debut.value || new Date(debut.value) <= new Date()) return dire("Choisissez une date à venir.", false);
+          if (!(d >= 15 && d <= 240)) return dire("La durée doit être de 15 à 240 minutes.", false);
+          if (!l) return dire("Le lien doit commencer par https://", false);
+          const { error } = await db.from("salle_seances").insert({ salle_id: salle.id, user_id: user.id, titre: titre.value.trim(),
+            debut: new Date(debut.value).toISOString(), duree_minutes: d, lien: l });
+          if (error) return dire("Programmation impossible : " + error.message, false);
+          dire("Séance programmée."); afficherOnglet(onglet);
+        } }, "Programmer"))));
+    }
+    const depuis = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
+    const { data, error } = await db.from("salle_seances").select("*").eq("salle_id", salle.id).gte("debut", depuis).order("debut");
+    if (error) { zone.append(el("p", { class: "doux" }, "Chargement impossible.")); return; }
+    if (!data.length) { zone.append(el("p", { class: "doux" }, "Aucune séance prévue pour le moment.")); return; }
+    data.forEach((x) => zone.append(el("article", { class: "item" + (x.masque ? " masque" : "") },
+      el("h3", {}, x.titre + (x.masque ? " (masqué)" : "")),
+      el("p", { class: "doux" }, dateHeure(x.debut) + " · " + x.duree_minutes + " min · " + auteur(x.user_id)),
+      el("div", { class: "rang" }, el("a", { class: "btn petit", href: x.lien, target: "_blank", rel: "noopener" }, "Rejoindre la séance")),
+      boutonsGestion("salle_seances", "seance", x))));
+  }
+
+  /* ---------- Questions et réponses ---------- */
+  async function chargerQuestions(zone) {
+    if (!user) {
+      zone.append(el("p", { class: "doux" }, "Connectez-vous à FRIBOUK pour lire et poser des questions. "), el("a", { class: "lien", href: "index.html" }, "Ouvrir FRIBOUK"));
+      return;
+    }
+    const ta = el("textarea", { maxlength: "600", placeholder: "Posez votre question. Ne partagez ni numéro de téléphone ni adresse." });
+    zone.append(el("div", { class: "nouveau" }, el("h3", {}, "Poser une question"), ta,
+      el("div", { class: "rang" }, el("button", { class: "btn", type: "button", onclick: async () => {
+        const t = ta.value.trim();
+        if (t.length < 5) return dire("Écrivez au moins 5 caractères.", false);
+        const { error } = await db.from("salle_questions").insert({ salle_id: salle.id, user_id: user.id, texte: t });
+        if (error) return dire(/row-level security/i.test(error.message) ? "Limite de 10 questions par jour atteinte." : error.message, false);
+        afficherOnglet(onglet);
+      } }, "Publier la question"))));
+    const { data, error } = await db.from("salle_questions")
+      .select("id,texte,user_id,created_at,masque,salle_reponses(id,texte,user_id,created_at,masque)")
+      .eq("salle_id", salle.id).order("created_at", { ascending: false }).limit(30);
+    if (error) { zone.append(el("p", { class: "doux" }, "Chargement impossible.")); return; }
+    if (!data.length) { zone.append(el("p", { class: "doux" }, "Aucune question pour le moment. Posez la première.")); return; }
+    data.forEach((q) => {
+      const reps = (q.salle_reponses || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      const saisie = el("input", { maxlength: "600", placeholder: "Votre réponse" });
+      zone.append(el("article", { class: "item" + (q.masque ? " masque" : "") },
+        el("p", {}, q.texte + (q.masque ? " (masqué)" : "")),
+        el("p", { class: "doux" }, auteur(q.user_id) + " · " + dateHeure(q.created_at)),
+        ...reps.map((r) => el("div", { class: "rep" + (r.masque ? " masque" : "") },
+          el("p", {}, r.texte + (r.masque ? " (masqué)" : "")),
+          el("p", { class: "doux" }, auteur(r.user_id) + " · " + dateHeure(r.created_at)),
+          boutonsGestion("salle_reponses", "reponse", r))),
+        el("div", { class: "rep" }, saisie, el("div", { class: "rang" }, el("button", { class: "btn petit", type: "button", onclick: async () => {
+          const t = saisie.value.trim();
+          if (t.length < 2) return dire("Écrivez votre réponse.", false);
+          const { error: e } = await db.from("salle_reponses").insert({ question_id: q.id, user_id: user.id, texte: t });
+          if (e) return dire(/row-level security/i.test(e.message) ? "Limite de 30 réponses par jour atteinte." : e.message, false);
+          afficherOnglet(onglet);
+        } }, "Répondre"))),
+        boutonsGestion("salle_questions", "question", q)));
+    });
+  }
+
+  /* ---------- Signalements (administrateur) ---------- */
+  async function voirSignalements() {
+    const { data, error } = await db.from("signalements").select("*").order("created_at", { ascending: false }).limit(30);
+    const liste = el("div", {});
+    if (error) liste.append(el("p", { class: "doux" }, "Chargement impossible."));
+    else if (!data.length) liste.append(el("p", { class: "doux" }, "Aucun signalement."));
+    else data.forEach((s) => {
+      const sa = salles.find((x) => x.id === s.salle_id);
+      const ong = s.cible === "question" || s.cible === "reponse" ? "questions" : s.cible === "seance" ? "seances" : "cours";
+      liste.append(el("div", { class: "item" },
+        el("p", {}, s.motif),
+        el("p", { class: "doux" }, (sa ? sa.niveau + " · " + sa.matiere : "Salle") + " · " + s.cible + " · " + dateHeure(s.created_at)),
+        sa ? el("div", { class: "rang" }, el("button", { class: "btn petit", type: "button", onclick: () => ouvrirSalle(sa, ong) }, "Ouvrir la salle")) : null));
+    });
+    vue(el("button", { class: "retour", type: "button", onclick: voirNiveaux }, "← Classes"), el("div", { class: "carte" }, el("h2", {}, "Signalements")), liste);
+  }
+
+  init();
+</script>
+</body>
+  </html>
+  
