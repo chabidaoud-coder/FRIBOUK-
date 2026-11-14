@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b2620">
+<title>FRIBOUK – Formations</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root{--fond:#0b2620;--carte:#12372f;--carte2:#0f2f28;--bord:#25544a;--texte:#eef5f2;--doux:#a9c2ba;--or:#e8b64a;--vert:#2a9d78;--rouge:#ff8a7a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;padding-bottom:40px}
+  .haut{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(11,38,32,.94);border-bottom:1px solid var(--bord)}
+  .haut a{color:var(--or);text-decoration:none;font-weight:700;font-size:1.3rem;padding:6px 10px 6px 0}
+  .haut h1{font-size:1.1rem;margin:0;flex:1}
+  .haut .devenir{font-size:.85rem;font-weight:700;padding:8px 12px;border:1px solid var(--or);border-radius:10px}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  .carte{background:var(--carte);border:1px solid var(--bord);border-radius:16px;padding:16px;margin-bottom:14px}
+  .carte h2{font-size:1.1rem;margin:0 0 6px}
+  input,select{width:100%;padding:12px;background:var(--carte2);color:var(--texte);border:1px solid var(--bord);border-radius:12px;font:inherit;margin-top:8px}
+  .badge{display:inline-block;font-size:.78rem;padding:3px 10px;border-radius:999px;border:1px solid var(--bord);color:var(--doux);margin:8px 6px 0 0}
+  .badge.prix{border-color:var(--or);color:var(--or)}
+  .badge.gratuit{border-color:var(--vert);color:#7be0b8}
+  .doux{color:var(--doux);font-size:.9rem;margin:6px 0 0}
+  .btn{display:inline-block;margin-top:12px;font:inherit;font-weight:700;border-radius:12px;padding:12px 16px;background:var(--or);color:#1c1604;text-decoration:none;border:0}
+  .vide{color:var(--doux);text-align:center;padding:24px 0}
+  :focus-visible{outline:3px solid var(--or);outline-offset:2px}
+</style>
+</head>
+<body>
+<header class="haut">
+  <a href="index.html" aria-label="Retour à FRIBOUK">←</a>
+  <h1>Formations</h1>
+  <a class="devenir" href="formateur.html">Devenir formateur</a>
+</header>
+<main>
+  <div class="carte">
+    <input id="mot" type="search" placeholder="Rechercher une formation" style="margin-top:0">
+    <select id="fmt" aria-label="Format">
+      <option value="">Tous les formats</option>
+      <option value="pdf">PDF</option>
+      <option value="video">Vidéo</option>
+      <option value="presentiel">Présentiel</option>
+    </select>
+    <select id="prix" aria-label="Prix">
+      <option value="">Gratuites et payantes</option>
+      <option value="gratuit">Gratuites</option>
+      <option value="payant">Payantes</option>
+    </select>
+  </div>
+  <div id="liste"><p class="vide">Chargement…</p></div>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://rocvbxvxcxisyejrwzzx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_0KUOpiRmTZ4SpQQIS-5iZw_K6fOyWOh";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const FORMATS = { pdf: "PDF", video: "Vidéo", presentiel: "Présentiel" };
+
+  const el = (t, a = {}, ...k) => {
+    const n = document.createElement(t);
+    for (const [x, v] of Object.entries(a)) { if (x === "class") n.className = v; else n.setAttribute(x, v); }
+    n.append(...k.filter((c) => c !== null && c !== undefined && c !== false));
+    return n;
+  };
+  const lienSur = (u) => { try { const x = new URL(u); return x.protocol === "https:" ? x.href : null; } catch (e) { return null; } };
+
+  async function charger() {
+    const zone = $("liste");
+    zone.replaceChildren(el("p", { class: "vide" }, "Chargement…"));
+    let q = db.from("formations")
+      .select("id,titre,description,categorie,format,duree_heures,lien_contenu,lieu,prix_xof,espaces_formation(nom)")
+      .eq("statut", "approuve").order("created_at", { ascending: false }).limit(60);
+    const mot = $("mot").value.trim().replace(/[%,]/g, " ");
+    if (mot) q = q.ilike("titre", "%" + mot + "%");
+    if ($("fmt").value) q = q.eq("format", $("fmt").value);
+    if ($("prix").value === "gratuit") q = q.eq("prix_xof", 0);
+    if ($("prix").value === "payant") q = q.gt("prix_xof", 0);
+    const { data, error } = await q;
+    zone.replaceChildren();
+    if (error) { zone.append(el("p", { class: "vide" }, "Impossible de charger les formations. Réessayez.")); return; }
+    if (!data.length) { zone.append(el("p", { class: "vide" }, "Aucune formation pour le moment.")); return; }
+    data.forEach((f) => {
+      const gratuit = f.prix_xof === 0;
+      const lien = gratuit && f.format !== "presentiel" ? lienSur(f.lien_contenu) : null;
+      zone.append(el("article", { class: "carte" },
+        el("h2", {}, f.titre),
+        el("p", { class: "doux" }, "Par " + (f.espaces_formation ? f.espaces_formation.nom : "un formateur FRIBOUK")),
+        el("span", { class: "badge" }, FORMATS[f.format] || f.format),
+        el("span", { class: "badge" }, f.duree_heures + " h"),
+        f.categorie ? el("span", { class: "badge" }, f.categorie) : null,
+        el("span", { class: "badge " + (gratuit ? "gratuit" : "prix") }, gratuit ? "Gratuit" : f.prix_xof.toLocaleString("fr-FR") + " FCFA"),
+        f.description ? el("p", { class: "doux" }, f.description) : null,
+        f.format === "presentiel" ? el("p", { class: "doux" }, "Lieu : " + (f.lieu || "à préciser")) : null,
+        lien ? el("a", { class: "btn", href: lien, target: "_blank", rel: "noopener" }, "Ouvrir la formation") : null,
+        !gratuit ? el("p", { class: "doux" }, "Formation payante : l'achat sera bientôt disponible.") : null));
+    });
+  }
+
+  $("mot").addEventListener("keydown", (e) => { if (e.key === "Enter") charger(); });
+  $("fmt").onchange = charger; $("prix").onchange = charger;
+  charger();
+</script>
+</body>
+</html>
