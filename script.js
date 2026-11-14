@@ -463,6 +463,7 @@ function suivre(type, boutiqueId, produitId) {
 }
 
 /* ---------- BARKA : catalogue public ---------- */
+let boutiqueDemandee = new URLSearchParams(location.search).get("b");
 function lienWhatsApp(p) {
   const num = p.boutiques && p.boutiques.whatsapp ? String(p.boutiques.whatsapp).replace(/\D/g, "") : "";
   if (!num) return document.createTextNode("");
@@ -474,13 +475,19 @@ function lienWhatsApp(p) {
     onclick: () => suivre("clic_whatsapp", p.boutique_id, p.id)
   }, "💬 Commander sur WhatsApp");
 }
-
+function voirBoutique(id) {
+  $("#filtre-boutique").value = id;
+  suivre("vue_boutique", id);
+  chargerCatalogue();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+                       }
 async function chargerCatalogue() {
   // remplir le filtre boutiques (une seule fois)
   const filtre = $("#filtre-boutique");
   if (filtre.options.length <= 1) {
     const { data: bs } = await sb.from("boutiques").select("id, nom").order("nom");
     (bs || []).forEach((b) => filtre.append(h("option", { value: b.id }, b.nom)));
+      if (boutiqueDemandee) { filtre.value = boutiqueDemandee; boutiqueDemandee = null; }
   }
 
   const zone = $("#liste-produits");
@@ -508,7 +515,8 @@ async function chargerCatalogue() {
         p.stock > 0
           ? h("button", { class: "bouton bouton-or", type: "button", onclick: () => ajouterAuPanier(p) }, "Ajouter au panier")
           : h("span", { class: "boutique" }, "Épuisé"),
-        lienWhatsApp(p))));
+          lienWhatsApp(p),
+        h("button", { class: "bouton bouton-petit", type: "button", onclick: () => voirBoutique(p.boutique_id) }, "Voir les autres produits"))));
   });
 }
 
@@ -641,5 +649,5 @@ $("#hg-envoyer").addEventListener("click", async () => {
 /* ---------- Démarrage ---------- */
 sauverPanier();
 majEntete();
-ouvrirVue("accueil");
+ouvrirVue(boutiqueDemandee ? "barka" : "accueil");
   
