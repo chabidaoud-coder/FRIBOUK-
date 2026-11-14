@@ -150,9 +150,9 @@
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const FUNCTIONS = SUPABASE_URL + "/functions/v1";
   const AVERT = "ℹ️ Complément traditionnel, ne remplace pas un avis médical.";
+  const LIEN_BOUTIQUE = "https://chabidaoud-coder.github.io/FRIBOUK-/";
   const $ = (id) => document.getElementById(id);
   let produits = [], comptes = [];
-
   const msg = (t, ok = true, lien) => {
     const m = $("rs-msg"); m.className = "msg " + (ok ? "ok" : "ko"); m.textContent = t + " ";
     if (lien) { const a = document.createElement("a"); a.href = lien; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Voir sur Facebook"; m.appendChild(a); }
@@ -265,10 +265,10 @@
     if (prog && (!quand || new Date(quand) <= new Date())) return msg("Choisissez une date et une heure à venir.", false);
     const { data: { user } } = await db.auth.getUser();
     if (!user) { $("alerte").hidden = false; return msg("Connectez-vous d'abord à FRIBOUK.", false); }
-
-    const btn = $("rs-publier"); btn.disabled = true; msg("Enregistrement…");
+   const btn = $("rs-publier"); btn.disabled = true; msg("Enregistrement…");
+    const texteFinal = texte.includes(LIEN_BOUTIQUE) ? texte : texte + "\n\n🛒 Découvrez notre boutique : " + LIEN_BOUTIQUE;
     const { data: post, error } = await db.from("social_posts").insert({
-      user_id: user.id, account_id: compte, message: texte, image_url: image || null,
+      user_id: user.id, account_id: compte, message: texteFinal, image_url: image || null,
       scheduled_at: prog ? new Date(quand).toISOString() : null,
       sponsored: sponso, budget_xof: sponso ? Number($("rs-budget").value) : null,
       status: prog ? "scheduled" : "draft",
