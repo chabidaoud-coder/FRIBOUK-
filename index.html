@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b2b2a">
+  <meta name="theme-color" content="#070b1f">
   <title>FRIBOUK — IA, création et commerce</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,15 +12,23 @@
 </head>
 <body>
 <header class="entete">
-  <button class="logo" data-vue="accueil" type="button">FRIBOUK</button>
+  <button class="logo" data-vue="accueil" type="button">
+    <span class="ico logo-ico" data-fb="F"><img src="images/logo.png" alt="" onerror="this.remove()"></span>
+    <span class="logo-txt"><b>FRIBOUK</b><small>Plateforme IA &amp; Commerce Digital</small></span>
+  </button>
   <div class="entete-droite">
     <button class="pastille" id="btn-credits" data-vue="tableau" type="button" hidden>
       <span id="credits-entete">0</span> crédits
     </button>
-    <button class="bouton bouton-petit" id="btn-panier" data-vue="panier" type="button">
+    <button class="pastille" id="btn-panier" data-vue="panier" type="button">
       Panier <span id="compteur-panier" class="badge">0</span>
     </button>
-    <button class="bouton bouton-petit bouton-or" id="btn-auth" data-vue="auth" type="button">Se connecter</button>
+    <button class="pastille pastille-or" id="btn-auth" data-vue="auth" type="button">Se connecter</button>
+  </div>
+  <div class="defile" aria-label="Infos FRIBOUK">
+    <div class="etiquette">📢 Infos FRIBOUK</div>
+    <div class="piste"><div class="mouvement" id="defile-messages"></div></div>
+    <div class="fleche" aria-hidden="true">»</div>
   </div>
 </header>
 
@@ -29,103 +37,78 @@
   <!-- ACCUEIL -->
   <section class="vue" id="vue-accueil">
     <div class="hero">
-      <h1>Créez avec l'IA.<br>Vendez depuis votre téléphone.</h1>
+      <h1>Créez avec l'IA.<br>Vendez depuis <em>votre téléphone.</em></h1>
       <p>FRIBOUK réunit l'intelligence artificielle, votre boutique en ligne et le marché BARKA dans un seul espace, pensé pour les mobiles.</p>
       <div class="actions">
-        <button class="bouton bouton-or" id="btn-commencer" type="button">Commencer</button>
-        <button class="bouton bouton-contour" data-vue="barka" type="button">Voir BARKA</button>
+        <button class="bouton bouton-or" id="btn-commencer" type="button">🚀 Commencer maintenant</button>
+        <button class="bouton bouton-contour" data-vue="barka" type="button">🏪 Voir BARKA</button>
       </div>
     </div>
-<style>
-  .acc-titre{margin:22px 4px 10px;font-size:1.05rem;color:#e8b64a;letter-spacing:.02em}
-  .acc-grille{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  @media(min-width:720px){.acc-grille{grid-template-columns:repeat(3,minmax(0,1fr))}}
-  .tuile{display:flex;flex-direction:column;text-align:left;padding:0;overflow:hidden;background:#12372f;color:#eef5f2;border:1px solid #25544a;border-radius:18px;cursor:pointer;font:inherit;min-height:215px}
-  .tuile:active{transform:scale(.98)}
-  .tuile:focus-visible{outline:3px solid #e8b64a;outline-offset:2px}
-  .tuile .visuel{height:96px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--a),var(--b))}
-  .tuile .visuel svg{width:84%;height:80px}
-  .tuile .texte{display:flex;flex-direction:column;gap:4px;padding:12px;flex:1}
-  .tuile strong{font-size:1rem}
-  .tuile small{color:#a9c2ba;font-size:.82rem;line-height:1.35}
-  .tuile .go{margin-top:auto;padding-top:6px;color:#e8b64a;font-weight:700;font-size:.85rem}
-</style>
 
-<h2 class="acc-titre">✨ Créer avec l'IA</h2>
-<div class="acc-grille">
-  <button class="tuile" type="button" data-vue="chat" style="--a:#1f7a5c;--b:#0f4a3a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="10" y="8" width="66" height="32" rx="10" fill="#fff"/><path d="M24 40 L20 54 L38 40Z" fill="#fff"/><circle cx="30" cy="24" r="3.5" fill="#2a9d78"/><circle cx="43" cy="24" r="3.5" fill="#2a9d78"/><circle cx="56" cy="24" r="3.5" fill="#2a9d78"/><rect x="44" y="38" width="66" height="30" rx="10" fill="#e8b64a"/><path d="M96 68 L102 78 L88 68Z" fill="#e8b64a"/></svg></span>
-    <span class="texte"><strong>IA Chat</strong><small>Exemple : « Écris-moi un message pour mes clients. »</small><span class="go">Ouvrir →</span></span>
+    <div class="acc-entete"><h2 class="acc-titre">✨ Créer avec l'IA</h2><span class="puce-titre">Outils intelligents</span></div>
+    <div class="acc-grille">
+  <button class="tuile c-vert" type="button" data-vue="chat">
+    <span class="ico " data-fb="🤖"><img src="images/ia-chat.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>IA Chat</strong><small>Discutez avec l'IA, posez vos questions et obtenez des réponses intelligentes.</small></span>
+    <span class="go">Ouvrir ➜</span>
   </button>
-  <button class="tuile" type="button" data-vue="texte" style="--a:#7a5c1f;--b:#4a3a0f">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="26" y="8" width="52" height="64" rx="6" fill="#fff"/><rect x="34" y="20" width="36" height="5" rx="2.5" fill="#2a9d78"/><rect x="34" y="31" width="36" height="4" rx="2" fill="#b9cfc7"/><rect x="34" y="40" width="36" height="4" rx="2" fill="#b9cfc7"/><rect x="34" y="49" width="24" height="4" rx="2" fill="#b9cfc7"/><path d="M82 58 L102 24 L110 30 L90 64 L80 66Z" fill="#e8b64a"/></svg></span>
-    <span class="texte"><strong>Générateur de textes</strong><small>Exemple : une publicité prête à publier en 10 secondes.</small><span class="go">Ouvrir →</span></span>
+  <button class="tuile c-violet" type="button" data-vue="texte">
+    <span class="ico " data-fb="📝"><img src="images/generateur.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>Générateur de textes</strong><small>Rédigez des publicités, articles, fiches produits, cours, etc. en quelques secondes.</small></span>
+    <span class="go">Ouvrir ➜</span>
   </button>
-  <button class="tuile" type="button" data-vue="studio" style="--a:#5c1f7a;--b:#3a0f4a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="14" y="8" width="92" height="62" rx="8" fill="#fff"/><circle cx="36" cy="28" r="7" fill="#e8b64a"/><path d="M14 62 L44 36 L64 54 L80 42 L106 62 V64 Q106 70 100 70 H20 Q14 70 14 64Z" fill="#2a9d78"/><circle cx="92" cy="22" r="11" fill="#0b2620" opacity=".85"/><path d="M89 16 L99 22 L89 28Z" fill="#fff"/></svg></span>
-    <span class="texte"><strong>Studio créatif</strong><small>Exemple : une image ou une vidéo pour ta boutique (bientôt).</small><span class="go">Ouvrir →</span></span>
+  <button class="tuile c-bleu" type="button" data-vue="studio">
+    <span class="ico " data-fb="🎨"><img src="images/studio.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>Studio créatif</strong><small>Créez des images et des vidéos professionnelles pour votre boutique (bientôt).</small></span>
+    <span class="go">Ouvrir ➜</span>
   </button>
-    <button class="tuile" type="button" onclick="location.href='atelier.html'" style="--a:#2f5d8a;--b:#0b1f3a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="14" y="8" width="60" height="64" rx="6" fill="#fff"/><rect x="22" y="18" width="44" height="8" rx="3" fill="#2f5d8a"/><rect x="22" y="32" width="30" height="4" rx="2" fill="#b9cfc7"/><rect x="22" y="42" width="36" height="4" rx="2" fill="#b9cfc7"/><rect x="62" y="30" width="46" height="30" rx="5" fill="#c9d3dd"/><circle cx="76" cy="42" r="5" fill="#2f5d8a"/></svg></span>
-    <span class="texte"><strong>Shortcut Atelier</strong><small>Exemple : un flyer ou une carte de visite prêts à imprimer.</small><span class="go">Ouvrir →</span></span>
-    </button>
-</div>
-
-<h2 class="acc-titre">🛍️ Vendre</h2>
-<div class="acc-grille">
-  <button class="tuile" type="button" data-vue="boutiques" style="--a:#1f5c7a;--b:#0f3a4a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="22" y="34" width="76" height="38" fill="#fff"/><rect x="14" y="12" width="92" height="22" rx="4" fill="#e8b64a"/><rect x="30" y="12" width="12" height="22" fill="#fff" opacity=".55"/><rect x="54" y="12" width="12" height="22" fill="#fff" opacity=".55"/><rect x="78" y="12" width="12" height="22" fill="#fff" opacity=".55"/><rect x="50" y="46" width="20" height="26" rx="3" fill="#2a9d78"/><rect x="28" y="44" width="16" height="14" rx="2" fill="#b9cfc7"/><rect x="76" y="44" width="16" height="14" rx="2" fill="#b9cfc7"/></svg></span>
-    <span class="texte"><strong>Mes boutiques</strong><small>Exemple : ajoute un produit avec sa photo et son prix.</small><span class="go">Ouvrir →</span></span>
-  </button>
-  <button class="tuile" type="button" data-vue="barka" style="--a:#7a2a1f;--b:#4a160f">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M30 30 H90 L84 70 H36Z" fill="#fff"/><path d="M44 30 Q44 10 60 10 Q76 10 76 30" fill="none" stroke="#e8b64a" stroke-width="5"/><circle cx="50" cy="50" r="7" fill="#2a9d78"/><circle cx="70" cy="50" r="7" fill="#e8b64a"/></svg></span>
-    <span class="texte"><strong>BARKA</strong><small>Exemple : parcours les produits de tous les vendeurs.</small><span class="go">Ouvrir →</span></span>
-  </button>
-  <button class="tuile" type="button" onclick="location.href='publier.html'" style="--a:#1f7a7a;--b:#0f4a4a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M18 32 H42 L82 12 V62 L42 44 H18Z" fill="#fff"/><rect x="24" y="44" width="12" height="20" rx="3" fill="#e8b64a"/><path d="M92 28 Q104 38 92 48" fill="none" stroke="#e8b64a" stroke-width="4" stroke-linecap="round"/><path d="M98 18 Q116 38 98 58" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/></svg></span>
-    <span class="texte"><strong>Publier sur mes réseaux</strong><small>Exemple : ton produit publié sur Facebook en un clic.</small><span class="go">Ouvrir →</span></span>
-  </button>
-</div>
-
-<h2 class="acc-titre">🎓 Apprendre et enseigner</h2>
-<div class="acc-grille">
-  <button class="tuile" type="button" onclick="location.href='formations.html'" style="--a:#1f3a7a;--b:#0f1f4a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M60 12 L108 32 L60 52 L12 32Z" fill="#fff"/><path d="M34 44 V60 Q60 74 86 60 V44 L60 56Z" fill="#e8b64a"/><rect x="104" y="32" width="4" height="26" fill="#e8b64a"/></svg></span>
-    <span class="texte"><strong>Formations</strong><small>Exemple : un cours de couture en PDF ou en vidéo.</small><span class="go">Ouvrir →</span></span>
-  </button>
-  <button class="tuile" type="button" onclick="location.href='salles.html'" style="--a:#3a7a1f;--b:#1f4a0f">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M60 18 Q36 8 14 16 V64 Q36 56 60 66Z" fill="#fff"/><path d="M60 18 Q84 8 106 16 V64 Q84 56 60 66Z" fill="#e6f4ec"/><rect x="22" y="26" width="28" height="4" rx="2" fill="#2a9d78"/><rect x="22" y="36" width="28" height="4" rx="2" fill="#b9cfc7"/><rect x="70" y="26" width="28" height="4" rx="2" fill="#e8b64a"/><rect x="70" y="36" width="28" height="4" rx="2" fill="#b9cfc7"/></svg></span>
-    <span class="texte"><strong>Salles d'études</strong><small>Exemple : maths de 3e, exercices corrigés et séance en direct.</small><span class="go">Ouvrir →</span></span>
-  </button>
-  <button class="tuile" type="button" onclick="location.href='formateur.html'" style="--a:#7a3a1f;--b:#4a1f0f">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="8" y="10" width="66" height="44" rx="4" fill="#fff"/><path d="M16 46 L30 30 L42 38 L58 20" fill="none" stroke="#2a9d78" stroke-width="3" stroke-linecap="round"/><circle cx="92" cy="26" r="9" fill="#e8b64a"/><path d="M76 68 Q76 42 92 42 Q108 42 108 68Z" fill="#fff"/></svg></span>
-    <span class="texte"><strong>Espace formateur</strong><small>Exemple : publie ton cours et gagne des élèves.</small><span class="go">Ouvrir →</span></span>
-  </button>
-</div>
-
-<h2 class="acc-titre">🌿 Bien-être</h2>
-<div class="acc-grille">
-  <button class="tuile" type="button" data-vue="herboriste" style="--a:#1f7a3a;--b:#0f4a20">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M60 76 V28" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M60 52 Q30 50 28 22 Q56 22 60 52Z" fill="#9be0b8"/><path d="M60 40 Q90 38 92 10 Q64 10 60 40Z" fill="#fff"/><path d="M60 64 Q40 64 36 48 Q56 46 60 64Z" fill="#2a9d78"/></svg></span>
-    <span class="texte"><strong>Herboriste Guiyagui</strong><small>Exemple : plantes, conseils et traditions de Parakou.</small><span class="go">Ouvrir →</span></span>
-  </button>
-</div>
-
-<h2 class="acc-titre">👤 Mon compte</h2>
-<div class="acc-grille">
-  <button class="tuile" type="button" onclick="location.href='statistiques.html'" style="--a:#4a1f7a;--b:#2a0f4a">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="22" y="46" width="16" height="26" rx="2" fill="#fff"/><rect x="46" y="30" width="16" height="42" rx="2" fill="#e8b64a"/><rect x="70" y="18" width="16" height="54" rx="2" fill="#fff"/><path d="M20 38 L48 22 L72 30 L100 8" fill="none" stroke="#2a9d78" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="texte"><strong>Mon activité</strong><small>Exemple : vues, contacts WhatsApp et paniers de tes produits.</small><span class="go">Ouvrir →</span></span>
-  </button>
-  <button class="tuile" type="button" onclick="location.href='abonnements.html'" style="--a:#7a6a1f;--b:#4a400f">
-    <span class="visuel"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="14" y="16" width="92" height="52" rx="8" fill="#fff"/><rect x="14" y="30" width="92" height="12" fill="#0b2620" opacity=".8"/><rect x="24" y="52" width="30" height="6" rx="3" fill="#e8b64a"/><rect x="60" y="52" width="14" height="6" rx="3" fill="#b9cfc7"/></svg></span>
-    <span class="texte"><strong>Abonnements</strong><small>Exemple : 500 F pour publier une semaine sur ta boutique.</small><span class="go">Ouvrir →</span></span>
+  <button class="tuile c-orange" type="button" onclick="location.href='atelier.html'">
+    <span class="ico " data-fb="🖨️"><img src="images/atelier.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>Shortcut Atelier</strong><small>Générez rapidement un flyer, une carte de visite ou une affiche prête à imprimer.</small></span>
+    <span class="go">Ouvrir ➜</span>
   </button>
     </div>
-    <div class="bandeau">
-      <h2>Choisissez votre formule</h2>
-      <p>20 crédits gratuits par jour pour démarrer.</p>
-      <button class="bouton bouton-contour" data-vue="abonnements" type="button">Voir les abonnements</button>
+
+    <div class="acc-entete"><h2 class="acc-titre">🛒 Vendre et Développer</h2></div>
+    <div class="acc-grille">
+  <button class="tuile c-violet" type="button" data-vue="boutiques">
+    <span class="ico " data-fb="🏬"><img src="images/boutiques.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>Mes boutiques</strong><small>Créez et gérez votre boutique, ajoutez vos produits et fixez vos prix.</small></span>
+    <span class="go">Ouvrir ➜</span>
+  </button>
+  <button class="tuile c-rose" type="button" data-vue="barka">
+    <span class="ico " data-fb="🛍️"><img src="images/barka.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>BARKA</strong><small>Le grand marché en ligne pour acheter et vendre tous types de produits.</small></span>
+    <span class="go">Ouvrir ➜</span>
+  </button>
+  <button class="tuile c-bleu" type="button" onclick="location.href='statistiques.html'">
+    <span class="ico " data-fb="📊"><img src="images/activite.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>Mon activité</strong><small>Suivez vos ventes, vos vues, vos contacts et la performance de votre boutique.</small></span>
+    <span class="go">Ouvrir ➜</span>
+  </button>
+  <button class="tuile c-orange" type="button" onclick="location.href='abonnements.html'">
+    <span class="ico " data-fb="💳"><img src="images/abonnements.png" alt="" onerror="this.remove()"></span>
+    <span class="texte"><strong>Abonnements</strong><small>Choisissez une formule adaptée pour plus de crédits et de fonctionnalités.</small></span>
+    <span class="go">Ouvrir ➜</span>
+  </button>
+    </div>
+
+    <div class="premium">
+      <span class="ico grand" data-fb="👑"><img src="images/couronne.png" alt="" onerror="this.remove()"></span>
+      <div class="premium-txt">
+        <h2>Choisissez votre formule</h2>
+        <p>20 crédits gratuits par jour pour démarrer. Passez à un abonnement pour aller plus loin !</p>
+      </div>
+      <span class="ico grand diamant" data-fb="💎"><img src="images/diamant.png" alt="" onerror="this.remove()"></span>
+      <button class="bouton bouton-or" data-vue="abonnements" type="button">Voir les abonnements ➜</button>
+    </div>
+
+    <div class="chips">
+    <button class="chip" type="button" onclick="location.href='formations.html'"><span class="ico " data-fb="🎓"><img src="images/formations.png" alt="" onerror="this.remove()"></span>Formations</button>
+    <button class="chip" type="button" onclick="location.href='formateur.html'"><span class="ico " data-fb="🧑‍🏫"><img src="images/formateur.png" alt="" onerror="this.remove()"></span>Espace formateur</button>
+    <button class="chip" type="button" onclick="location.href='publier.html'"><span class="ico " data-fb="📣"><img src="images/publier.png" alt="" onerror="this.remove()"></span>Publier sur mes réseaux</button>
+    <button class="chip" type="button" onclick="location.href='salles.html'"><span class="ico " data-fb="📚"><img src="images/salles.png" alt="" onerror="this.remove()"></span>Salles d'études</button>
+    <button class="chip" type="button" data-vue="herboriste"><span class="ico " data-fb="🌿"><img src="images/herboriste.png" alt="" onerror="this.remove()"></span>Herboriste Guiyagui</button>
     </div>
   </section>
 
@@ -391,28 +374,22 @@
 </main>
 
 <nav class="navigation" aria-label="Navigation principale">
-  <button data-vue="accueil" type="button"><span>🏠</span>Accueil</button>
-  <button data-vue="chat" type="button"><span>💬</span>IA</button>
-  <button data-vue="barka" type="button"><span>🛍️</span>BARKA</button>
-  <button data-vue="boutiques" type="button"><span>🏪</span>Boutiques</button>
-  <button data-vue="tableau" type="button"><span>👤</span>Compte</button>
+  <button data-vue="accueil" type="button"><span class="ico " data-fb="🏠"><img src="images/nav-accueil.png" alt="" onerror="this.remove()"></span>Accueil</button>
+  <button data-vue="chat" type="button"><span class="ico " data-fb="🤖"><img src="images/nav-ia.png" alt="" onerror="this.remove()"></span>IA</button>
+  <button data-vue="barka" type="button"><span class="ico " data-fb="🛒"><img src="images/nav-barka.png" alt="" onerror="this.remove()"></span>BARKA</button>
+  <button data-vue="boutiques" type="button"><span class="ico " data-fb="🏪"><img src="images/nav-boutiques.png" alt="" onerror="this.remove()"></span>Boutiques</button>
+  <button data-vue="tableau" type="button"><span class="ico " data-fb="👤"><img src="images/nav-compte.png" alt="" onerror="this.remove()"></span>Compte</button>
 </nav>
-<footer class="pied">
- <p>
-  <a href="formations.html" style="color:inherit;font-weight:700">🎓 Formations</a>
-  &nbsp;·&nbsp;
-  <a href="formateur.html" style="color:inherit;font-weight:700">🧑‍🏫 Espace formateur</a>
-</p>
-  <p>
-    <a href="publier.html" style="color:inherit;font-weight:700">📣 Publier sur mes réseaux</a>
-    &nbsp;·&nbsp;
-    <a href="statistiques.html" style="color:inherit;font-weight:700">📊 Mon activité</a>
-  </p>
-  <a href="abonnements.html" style="color:inherit;font-weight:700">💳 Abonnements</a>
-  <p>© FRIBOUK — Tous droits réservés</p>
-</footer>
+<footer class="pied"><p>© FRIBOUK — Tous droits réservés</p></footer>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script>window.addEventListener("error", function (e) { alert("Erreur : " + e.message + " (ligne " + e.lineno + ")"); });</script>
+<script>
+(function(){
+  var m = ["🎁 FRIBOUK vous offre 20 crédits gratuits chaque jour.","🤖 Créez vos textes avec l'intelligence artificielle.","🛍️ Créez votre boutique et vendez vos produits.","🌍 Découvrez le marché BARKA.","🎓 Développez vos compétences avec nos formations.","🚀 Faites grandir votre activité avec FRIBOUK."];
+  var h = m.map(function(x){return "<span>"+x+"</span>";}).join("");
+  document.getElementById("defile-messages").innerHTML = h + h;
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js" defer></script>
 </body>
