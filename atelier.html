@@ -44,6 +44,8 @@
   #modal .btn{display:block;width:100%;margin-top:10px}
   #msg{position:fixed;left:12px;right:12px;top:64px;z-index:30;padding:10px;border-radius:12px;background:var(--carte);border:1px solid var(--bord);text-align:center}
   #msg.ko{color:var(--rouge);border-color:var(--rouge)}
+  .tuile.travail{cursor:default}
+  .travail .btn{display:block;width:100%;margin-top:8px}
   [hidden]{display:none !important}
   :focus-visible{outline:3px solid var(--arg);outline-offset:2px}
 </style>
@@ -55,9 +57,10 @@
   <span id="solde" hidden></span>
 </header>
 <main>
-  <section id="v-format"><h2>Que voulez-vous créer ?</h2><div class="grille" id="l-format"></div></section>
+  <section id="v-format"><button class="btn contour" id="b-travaux" type="button" style="margin-bottom:14px">📂 Mes travaux sauvegardés</button><h2>Que voulez-vous créer ?</h2><div class="grille" id="l-format"></div></section>
   <section id="v-modele" hidden><button class="retour" id="r-format" type="button">← Formats</button><h2>Choisissez un modèle</h2><div class="grille" id="l-modele"></div></section>
   <section id="v-editeur" hidden><button class="retour" id="r-modele" type="button">← Modèles</button><div id="zone"></div></section>
+  <section id="v-travaux" hidden><button class="retour" id="r-travaux" type="button">← Formats</button><h2>Mes travaux sauvegardés</h2><div class="grille" id="l-travaux"></div></section>
 </main>
 
 <div class="bas" id="bas" hidden>
@@ -78,6 +81,7 @@
     <button class="btn p rouge" id="p-sup" type="button">Supprimer</button>
   </div>
   <div class="barre">
+    <button class="btn p" id="x-save" type="button">💾 Sauvegarder</button>
     <button class="btn p" id="a-texte" type="button">+ Texte</button>
     <button class="btn p" id="a-photo" type="button">+ Photo</button>
     <button class="btn p" id="a-rect" type="button">+ Forme</button>
@@ -184,7 +188,7 @@
   };
 
   /* ---------- Utilitaires ---------- */
-  let canvas = null, fmt = null, zoom = 1, minuteur = null;
+  let canvas = null, fmt = null, zoom = 1, minuteur = null, travailId = null, travailTitre = "";
   const el = (t, a = {}, ...k) => {
     const n = document.createElement(t);
     for (const [x, v] of Object.entries(a)) { if (x === "class") n.className = v; else if (x.startsWith("on")) n[x] = v; else n.setAttribute(x, v); }
@@ -192,7 +196,7 @@
     return n;
   };
   const dire = (t, ok = true) => { const m = $("msg"); m.textContent = t; m.className = ok ? "" : "ko"; m.hidden = false; clearTimeout(minuteur); minuteur = setTimeout(() => { m.hidden = true; }, 4000); };
-  const montrer = (id) => { ["v-format", "v-modele", "v-editeur"].forEach((v) => { $(v).hidden = v !== id; }); $("bas").hidden = id !== "v-editeur"; window.scrollTo(0, 0); };
+  const montrer = (id) => { ["v-format", "v-modele", "v-editeur", "v-travaux"].forEach((v) => { $(v).hidden = v !== id; }); $("bas").hidden = id !== "v-editeur"; window.scrollTo(0, 0); };
   const polices = () => Promise.all(POLICES.map((p) => document.fonts.load("700 20px '" + p + "'").catch(() => null)));
 
   /* ---------- Écrans ---------- */
@@ -214,7 +218,7 @@
     });
   }
 
-  async function ouvrir(m) {
+  async function preparerCanvas() {
     montrer("v-editeur");
     const zone = $("zone"); zone.replaceChildren(el("canvas", { id: "cv" }));
     if (canvas) canvas.dispose();
@@ -222,10 +226,18 @@
     zoom = Math.min(Math.max(Math.min(zone.clientWidth, 560), 200) / fmt.w, 1.6);
     canvas = new fabric.Canvas("cv", { preserveObjectStacking: true, selection: false });
     canvas.setZoom(zoom); canvas.setDimensions({ width: fmt.w * zoom, height: fmt.h * zoom });
-    m.b(fmt.w, fmt.h).forEach((o, i) => { if (i === 0) o.set({ selectable: false, evented: false }); canvas.add(o); });
+  }
+  function finirCanvas() {
     canvas.renderAll();
     ["selection:created", "selection:updated", "selection:cleared"].forEach((e) => canvas.on(e, majPanneau));
+    $("r-modele").textContent = travailId ? "← Mes travaux" : "← Modèles";
     majPanneau(); majSolde();
+  }
+  async function ouvrir(m) {
+    travailId = null; travailTitre = "";
+    await preparerCanvas();
+    m.b(fmt.w, fmt.h).forEach((o, i) => { if (i === 0) o.set({ selectable: false, evented: false }); canvas.add(o); });
+    finirCanvas();
   }
 /* ---------- Panneau de réglages ---------- */
   const estTexte = (o) => o && (o.type === "textbox" || o.type === "i-text");
@@ -258,6 +270,18 @@
     else o.set("clipPath", new fabric.Circle({ radius: Math.min(o.width, o.height) / 2, originX: "center", originY: "center" }));
   });
 
+  const reduire = (src, type, max = 1200) => new Promise((ok) => {
+    const i = new Image();
+    i.onload = () => {
+      const k = Math.min(1, max / Math.max(i.width, i.height));
+      if (k === 1 && src.length < 400000) return ok(src);
+      const c = document.createElement("canvas"); c.width = Math.round(i.width * k); c.height = Math.round(i.height * k);
+      c.getContext("2d").drawImage(i, 0, 0, c.width, c.height);
+      ok(type === "image/png" ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", .85));
+    };
+    i.onerror = () => ok(src); i.src = src;
+  });
+
   /* ---------- Ajouts ---------- */
   const ajouter = (o) => { canvas.add(o); o.setCoords(); canvas.setActiveObject(o); canvas.requestRenderAll(); };
   $("a-texte").onclick = () => ajouter(T("Votre texte", { left: fmt.w * .1, top: fmt.h * .4, width: fmt.w * .8, fontSize: fmt.w * .07, fill: C.bleu, fontWeight: "700", textAlign: "center" }));
@@ -269,7 +293,7 @@
     if (!f) return;
     if (!f.type.startsWith("image/") || f.size > 8 * 1024 * 1024) return dire("Choisissez une image de 8 Mo maximum.", false);
     const r = new FileReader();
-    r.onload = () => fabric.Image.fromURL(r.result, (img) => {
+    r.onload = async () => fabric.Image.fromURL(await reduire(r.result, f.type), (img) => {
       img.scale(Math.min((fmt.w * .6) / img.width, (fmt.h * .5) / img.height));
       img.set({ left: fmt.w * .2, top: fmt.h * .25 }); ajouter(img);
     });
@@ -340,9 +364,87 @@
   $("x-jpg").onclick = () => exporter("jpg");
   $("x-pdf").onclick = () => exporter("pdf");
 
+  /* ---------- Sauvegarde et reprise des travaux ---------- */
+  const TAILLE_MAX = 4 * 1024 * 1024;
+  const sessionActive = async () => (await db.auth.getSession()).data.session;
+
+  function nommer() {
+    return new Promise((fin) => {
+      const champ = el("input", { type: "text", maxlength: "60", value: travailTitre || "", placeholder: "Ex. : Flyer promo savon", style: "width:100%;padding:10px;border-radius:10px;border:1px solid var(--bord);background:var(--fond);color:var(--texte);font:inherit" });
+      const boite = el("div", { class: "boite" }, el("h2", {}, "Nommez votre travail"), champ,
+        el("button", { class: "btn", type: "button", onclick: () => { $("modal").hidden = true; fin(champ.value.trim() || "Sans titre"); } }, "Enregistrer"),
+        el("button", { class: "btn contour", type: "button", onclick: () => { $("modal").hidden = true; fin(null); } }, "Annuler"));
+      $("modal").replaceChildren(boite); $("modal").hidden = false; champ.focus();
+    });
+  }
+
+  async function sauvegarder() {
+    if (!canvas) return;
+    if (!(await sessionActive())) return dire("Connectez-vous à FRIBOUK pour sauvegarder votre travail.", false);
+    let titre = travailTitre;
+    if (!travailId) { titre = await nommer(); if (titre === null) return; }
+    canvas.discardActiveObject(); canvas.renderAll();
+    const contenu = { format: fmt.id, canvas: canvas.toJSON(["selectable", "evented"]) };
+    if (JSON.stringify(contenu).length > TAILLE_MAX) return dire("Travail trop lourd : utilisez des photos plus petites.", false);
+    const miniature = canvas.toDataURL({ format: "jpeg", quality: .6, multiplier: 160 / (fmt.w * zoom) });
+    const champs = { titre, format: fmt.id, contenu, miniature, updated_at: new Date().toISOString() };
+    const rep = travailId
+      ? await db.from("atelier_travaux").update(champs).eq("id", travailId).select("id").single()
+      : await db.from("atelier_travaux").insert(champs).select("id").single();
+    if (rep.error) return dire("Sauvegarde impossible : " + rep.error.message, false);
+    travailId = rep.data.id; travailTitre = titre;
+    $("r-modele").textContent = "← Mes travaux";
+    dire("✅ Travail sauvegardé : " + titre);
+  }
+
+  async function voirTravaux() {
+    montrer("v-travaux");
+    const l = $("l-travaux"); l.replaceChildren(el("p", {}, "Chargement…"));
+    if (!(await sessionActive())) { l.replaceChildren(el("p", {}, "Connectez-vous à FRIBOUK pour retrouver vos travaux.")); return; }
+    const { data, error } = await db.from("atelier_travaux").select("id,titre,format,miniature,updated_at").order("updated_at", { ascending: false }).limit(50);
+    if (error) { l.replaceChildren(el("p", {}, "Lecture impossible : " + error.message)); return; }
+    if (!data.length) { l.replaceChildren(el("p", {}, "Aucun travail sauvegardé pour le moment.")); return; }
+    l.replaceChildren();
+    data.forEach((t) => {
+      const f = FORMATS.find((x) => x.id === t.format);
+      l.append(el("div", { class: "tuile travail" },
+        t.miniature ? el("img", { src: t.miniature, alt: "" }) : el("span", { class: "i" }, f ? f.ico : "🖼️"),
+        el("strong", {}, t.titre),
+        el("small", {}, (f ? f.nom + " · " : "") + new Date(t.updated_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })),
+        el("button", { class: "btn p", type: "button", onclick: () => ouvrirTravail(t.id) }, "Modifier"),
+        el("button", { class: "btn p rouge", type: "button", onclick: () => supprimerTravail(t) }, "Supprimer")));
+    });
+  }
+
+  async function ouvrirTravail(id) {
+    const { data, error } = await db.from("atelier_travaux").select("id,titre,format,contenu").eq("id", id).maybeSingle();
+    if (error || !data) return dire("Travail introuvable.", false);
+    const f = FORMATS.find((x) => x.id === data.format);
+    if (!f) return dire("Format inconnu.", false);
+    fmt = f; travailId = data.id; travailTitre = data.titre;
+    await preparerCanvas();
+    canvas.loadFromJSON(data.contenu.canvas, () => {
+      const fond0 = canvas.getObjects()[0]; if (fond0) fond0.set({ selectable: false, evented: false });
+      finirCanvas();
+    });
+  }
+
+  async function supprimerTravail(t) {
+    if (!confirm("Supprimer « " + t.titre + " » ?")) return;
+    const { error } = await db.from("atelier_travaux").delete().eq("id", t.id);
+    if (error) return dire("Suppression impossible : " + error.message, false);
+    if (travailId === t.id) travailId = null;
+    voirTravaux();
+  }
+  $("x-save").onclick = sauvegarder;
+  $("b-travaux").onclick = voirTravaux;
+  $("r-travaux").onclick = voirFormats;
+
   $("r-format").onclick = voirFormats;
-  $("r-modele").onclick = () => voirModeles(fmt);
+  $("r-modele").onclick = () => (travailId ? voirTravaux() : voirModeles(fmt));
   voirFormats(); majSolde();
+  const params = new URLSearchParams(location.search);
+  if (params.get("travail")) ouvrirTravail(params.get("travail")); else if (params.get("travaux")) voirTravaux();
 </script>
 </body>
 </html>
