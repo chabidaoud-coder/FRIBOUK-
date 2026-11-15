@@ -15,7 +15,6 @@
   --titre: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
   --corps: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
