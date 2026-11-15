@@ -3,8 +3,11 @@
   const entete = document.querySelector("header.entete");
   if (!entete) return;
 
-  const bouton = h("button", { id: "btn-menu", class: "btn-menu", type: "button", "aria-label": "Ouvrir le menu", "aria-expanded": "false" }, "☰");
-  entete.prepend(bouton);
+  let bouton = document.getElementById("btn-menu");
+  if (!bouton) {
+    bouton = h("button", { id: "btn-menu", class: "btn-menu", type: "button", "aria-label": "Ouvrir le menu", "aria-expanded": "false" }, h("span"), h("span"), h("span"));
+    entete.prepend(bouton);
+  }
   const fond = h("div", { id: "menu-fond", class: "menu-fond", hidden: "" });
   const corps = h("div", { class: "menu-corps" });
   const panneau = h("aside", { id: "menu-lateral", class: "menu-lateral", "aria-label": "Menu du compte" },
@@ -136,4 +139,4 @@
     });
   }
 })();
-                                 
+      
