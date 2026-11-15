@@ -232,3 +232,101 @@ textarea { resize: vertical; }
   * { transition: none !important; scroll-behavior: auto !important; }
                }
                        
+
+
+/* FRIBOUK — thème futuriste (à charger APRÈS style.css) */
+:root{
+  --fond:#070b1f; --fond-2:#0d1336; --surface:#121a45; --surface-2:#1b2561;
+  --trait:rgba(139,92,246,.45);
+  --or:#fbbf24; --or-fonce:#f59e0b; --feuille:#22d3ee;
+  --texte:#f2f5ff; --texte-doux:#a5b0e0;
+  --cyan:#22d3ee; --violet:#8b5cf6; --rose:#ec4899;
+  --titre:"Segoe UI",Roboto,system-ui,sans-serif; --corps:"Segoe UI",Roboto,system-ui,sans-serif;
+}
+body{
+  background:
+    radial-gradient(900px 500px at 85% -5%,rgba(139,92,246,.35),transparent 60%),
+    radial-gradient(700px 400px at -10% 30%,rgba(34,211,238,.18),transparent 60%),
+    var(--fond);
+  background-attachment:fixed;padding-bottom:110px;
+}
+/* En-tête */
+.entete{background:rgba(7,11,31,.88);border-bottom:1px solid rgba(255,255,255,.07);flex-wrap:wrap}
+.logo{font-size:1.5rem;font-weight:800;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--rose));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.pastille{border-color:rgba(34,211,238,.6);box-shadow:0 0 14px rgba(34,211,238,.25)}
+.bouton{border-radius:14px}
+.bouton-or{background:linear-gradient(90deg,#fbbf24,#f59e0b);box-shadow:0 0 18px rgba(251,191,36,.4)}
+.bouton-or:hover{background:linear-gradient(90deg,#fcd34d,#fbbf24)}
+.bouton-contour{border-color:var(--violet);color:#fff}
+.bouton-contour:hover{background:rgba(139,92,246,.2)}
+.bouton:hover{background:var(--surface-2)}
+.panneau,.sous-panneau,.carte-plan,.produit,.stat{border-color:var(--trait);box-shadow:0 0 16px rgba(139,92,246,.12)}
+.carte-plan.mise-en-avant{border-color:var(--or);box-shadow:0 0 22px rgba(251,191,36,.3)}
+
+/* Messages défilants */
+.defile{display:flex;align-items:center;flex:1 1 100%;margin-top:2px;border:1px solid var(--trait);border-radius:999px;
+  overflow:hidden;background:linear-gradient(90deg,rgba(139,92,246,.2),rgba(34,211,238,.1));
+  box-shadow:0 0 18px rgba(139,92,246,.25)}
+.defile .etiquette{flex:none;padding:7px 12px;font-weight:800;font-size:.8rem;background:rgba(7,11,31,.9);z-index:1}
+.defile .piste{flex:1;overflow:hidden}
+.defile .mouvement{display:inline-flex;gap:44px;white-space:nowrap;padding-left:20px;font-size:.85rem;
+  animation:defiler 40s linear infinite}
+.defile:hover .mouvement{animation-play-state:paused}
+@keyframes defiler{to{transform:translateX(-50%)}}
+
+/* Héros */
+.hero{position:relative;overflow:hidden;border-radius:26px;
+  background:linear-gradient(135deg,#141b4d,#1c1160 60%,#2a1070);border:1px solid var(--trait);
+  box-shadow:0 0 30px rgba(139,92,246,.3) inset}
+.hero h1,.hero p{max-width:74%}
+.hero h1 em{font-style:normal;color:var(--or)}
+.hero .orbe{position:absolute;right:-26px;top:22px;width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,var(--cyan) 25%,var(--violet) 60%,transparent 72%);
+  display:grid;place-items:center;font-size:50px;animation:flotte 5s ease-in-out infinite}
+@keyframes flotte{50%{transform:translateY(-12px)}}
+
+/* Tuiles de l'accueil */
+.acc-titre{color:#fff!important;font-size:1.15rem!important}
+.tuile{--c:var(--violet);background:linear-gradient(160deg,color-mix(in srgb,var(--c) 30%,#0b1030),#0b1030 80%)!important;
+  border:1px solid var(--c)!important;box-shadow:0 0 18px color-mix(in srgb,var(--c) 35%,transparent);
+  min-height:180px!important;border-radius:22px!important}
+.tuile .visuel{height:84px!important;background:none!important;font-size:2.6rem;filter:drop-shadow(0 0 10px var(--c))}
+.tuile .go{color:var(--or)!important}
+.c-vert{--c:#10b981}.c-violet{--c:#8b5cf6}.c-bleu{--c:#3b82f6}.c-orange{--c:#f97316}.c-rose{--c:#ec4899}.c-cyan{--c:#22d3ee}
+/* BARKA : panier animé */
+.panier-anim{display:flex;gap:4px;align-items:flex-end}
+.panier-anim span:last-child{animation:roule 2.4s ease-in-out infinite}
+@keyframes roule{50%{transform:translateX(8px)}}
+/* Mon activité : graphique */
+.graph{display:flex;align-items:flex-end;gap:6px;height:56px;width:70%}
+.graph i{flex:1;border-radius:4px 4px 0 0;height:var(--h);
+  background:linear-gradient(to top,var(--cyan),var(--violet));transform-origin:bottom;animation:monte 1.2s ease-out both}
+@keyframes monte{from{transform:scaleY(0)}}
+
+/* Abonnements : carte premium */
+.premium{display:flex;align-items:center;gap:14px;margin-top:22px;padding:18px;border-radius:24px;position:relative;overflow:hidden;
+  background:linear-gradient(120deg,#1b1160,#3b1a8f 55%,#5b21b6);border:1px solid rgba(251,191,36,.6);
+  box-shadow:0 0 30px rgba(251,191,36,.25)}
+.premium::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);
+  transform:translateX(-120%);animation:brille 4.5s ease-in-out infinite}
+@keyframes brille{to{transform:translateX(120%)}}
+.premium .couronne{font-size:3.2rem;filter:drop-shadow(0 0 14px var(--or))}
+.premium h2{color:var(--or);margin:0 0 4px}
+.premium p{font-size:.9rem;margin:0 0 10px}
+
+/* Navigation inférieure flottante */
+.navigation{left:50%!important;right:auto!important;transform:translateX(-50%);width:min(94%,520px)!important;
+  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;border-radius:28px!important;padding:8px!important;
+  background:rgba(14,21,56,.9)!important;border:1px solid var(--trait)!important;
+  box-shadow:0 0 28px rgba(139,92,246,.4)}
+.navigation button{border-radius:20px!important;padding:8px 2px!important}
+.navigation button.actif{color:#fff!important;background:linear-gradient(135deg,var(--violet),#5b21b6)!important;
+  box-shadow:0 0 18px rgba(139,92,246,.7)}
+.toast{bottom:110px}
+
+@media (max-width:380px){.hero h1,.hero p{max-width:100%}.hero .orbe{opacity:.35}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  
